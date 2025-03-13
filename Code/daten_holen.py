@@ -1,36 +1,16 @@
-import json
-import dictionary as dic
-
 import requests
+import json
 
-api_key = '2cedf059b44f953884d6476e481b8009'
-base_url = 'https://v3.football.api-sports.io/'
-headers = {
-    'x-apisports-key': api_key
-}
-
-
-def einfaches_verbinden():
-    endpoint = 'leagues'
-    response = requests.get(base_url + endpoint, headers=headers)
-    if response.status_code == 200:
-        data = response.json()
-        print(data)
-    else:
-        print(f"Error: {response.status_code}")
-
-
-def liga_aufrufen(league_id):
-    endpoint = f'leagues?id={league_id}'
-    response = requests.get(base_url + endpoint, headers=headers)
+def get_data():
+    api_key = 'api key'
+    url = f"URL{api_key}"
+    response = requests.get(url)
+    print(response.status_code)
 
     if response.status_code == 200:
         data = response.json()
-        with open(f"daten/{league_id}.json", "w") as outfile:
-            json.dump(data, outfile)
-        print(data)
+        return data
     else:
-        print(f"Fehler: {response.status_code}")
+        return None
 
-
-liga_aufrufen(78)
+get_data()
