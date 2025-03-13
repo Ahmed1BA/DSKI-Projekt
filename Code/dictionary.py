@@ -1,0 +1,20 @@
+team_ids_bundesliga = {
+    "FC Bayern München": 157,
+    "SC Freiburg": 160,
+    "VfL Wolfsburg": 161,
+    "Werder Bremen": 162,
+    "Borussia Mönchengladbach": 163,
+    "1. FSV Mainz 05": 164,
+    "Borussia Dortmund": 165,
+    "TSG 1899 Hoffenheim": 167,
+    "Bayer 04 Leverkusen": 168,
+    "Eintracht Frankfurt": 169,
+    "FC Augsburg": 170,
+    "VfB Stuttgart": 172,
+    "RB Leipzig": 173,
+    "VfL Bochum": 176,
+    "1. FC Heidenheim": 180,
+    "1. FC Union Berlin": 182,
+    "FC St. Pauli": 186,
+    "Holstein Kiel": 191
+}
