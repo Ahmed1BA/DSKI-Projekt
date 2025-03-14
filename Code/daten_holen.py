@@ -34,6 +34,11 @@ def liga_aufrufen(league_id):
 
 
 def mannschaft_aufrufen(team_id):
+    """
+    ruft Daten einer Mannschaft auf
+    :param team_id: gewünschte Mannschaft
+    :return:
+    """
     endpoint = f'teams?id={team_id}'
     response = requests.get(base_url + endpoint, headers=headers)
 
@@ -48,8 +53,9 @@ def mannschaft_aufrufen(team_id):
 
 def spieldaten_2_mannschaften(team_id_1, team_id_2):
     """
+    ruft alle Daten der vergangenen begegnungen auf
     :param team_id_1: id der Heimmannschaft
-    :param team_id_2: id der Auswertsmannschaft
+    :param team_id_2: id der Auswärtsmannschaft
     :return:
     """
     endpoint = f'fixtures/headtohead?h2h={team_id_2}-{team_id_1}'
@@ -65,8 +71,5 @@ def spieldaten_2_mannschaften(team_id_1, team_id_2):
 
 
 liga_aufrufen(78)
-print("ligga aufrufen passt")
 mannschaft_aufrufen(dic.team_ids_bundesliga["FC Bayern München"])
-print("mannschaft aufrufen passt")
 spieldaten_2_mannschaften(172, 160)
-print("vs passt")
