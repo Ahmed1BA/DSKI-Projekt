@@ -1,5 +1,5 @@
 import json
-import Code.API.dictionary as dic
+import dictionary as dic
 
 import requests
 
