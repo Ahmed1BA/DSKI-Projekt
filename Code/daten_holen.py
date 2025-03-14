@@ -15,7 +15,7 @@ def einfaches_verbinden():
     response = requests.get(base_url + endpoint, headers=headers)
     if response.status_code == 200:
         data = response.json()
-        print(data)
+        # print(data)
     else:
         print(f"Error: {response.status_code}")
 
@@ -46,5 +46,27 @@ def mannschaft_aufrufen(team_id):
         print(f"Fehler: {response.status_code}")
 
 
+def spieldaten_2_mannschaften(team_id_1, team_id_2):
+    """
+    :param team_id_1: id der Heimmannschaft
+    :param team_id_2: id der Auswertsmannschaft
+    :return:
+    """
+    endpoint = f'fixtures/headtohead?h2h={team_id_2}-{team_id_1}'
+    response = requests.get(base_url + endpoint, headers=headers)
+    if response.status_code == 200:
+
+        data = response.json()
+        print(data)
+        with open(f"daten/{team_id_1},{team_id_2}.json", "w") as outfile:
+            json.dump(data, outfile)
+    else:
+        print(f"Fehler: {response.status_code}")
+
+
 liga_aufrufen(78)
+print("ligga aufrufen passt")
 mannschaft_aufrufen(dic.team_ids_bundesliga["FC Bayern München"])
+print("mannschaft aufrufen passt")
+spieldaten_2_mannschaften(172, 160)
+print("vs passt")
