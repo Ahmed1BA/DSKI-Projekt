@@ -60,3 +60,19 @@ class ApiSportsClient:
         except requests.exceptions.RequestException as e:
             logging.error(f"Error fetching head-to-head data: {e}")
             return None
+
+    def get_fixtures(self, league_id, season):
+        endpoint = f"fixtures?league={league_id}&season={season}"
+        url = self.base_url + endpoint
+        try:
+            response = requests.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            file_name = f"{league_id}_{season}.json"
+            file_path = os.path.join(self.fixtures_dir, file_name)
+            with open(file_path, "w") as f:
+                json.dump(data, f)
+            return data
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error fetching fixtures for league {league_id}, season {season}: {e}")
+            return None
