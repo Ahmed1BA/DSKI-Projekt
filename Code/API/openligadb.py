@@ -4,7 +4,7 @@ import os
 
 import pandas as pd
 import requests
-from team_mapping import standardize_team
+from Code.API.team_mapping import standardize_team
 
 
 class OpenLigaDBClient:

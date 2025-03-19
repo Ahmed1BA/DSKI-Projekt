@@ -1,8 +1,8 @@
 import pandas as pd
-from api_client import ApiSportsClient
-from team_mapping import standardize_team
-from csv_analysis import load_csv_data
-from openligadb import OpenLigaDBClient
+from Code.API.api_client import ApiSportsClient
+from Code.API.team_mapping import standardize_team
+from Code.API.csv_analysis import load_csv_data
+from Code.API.openligadb import OpenLigaDBClient
 
 def load_fixtures_to_df(api_key, league_id, season, data_dir="data"):
     client = ApiSportsClient(api_key, data_dir=data_dir)

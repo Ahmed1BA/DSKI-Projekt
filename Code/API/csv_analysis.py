@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-from team_mapping import standardize_team
+from Code.API.team_mapping import standardize_team
 
 def load_csv_data(csv_path, team_col=None):
     """
