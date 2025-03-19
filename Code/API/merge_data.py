@@ -55,7 +55,6 @@ def merge_openligadb_csv(csv_path, matchdays=range(1, 35), league="bl1", season=
     print("DEBUG: OpenLigaDB DataFrame shape:", df_openliga.shape)
     print("DEBUG: OpenLigaDB DataFrame head:\n", df_openliga.head())
     
-    # Sicherstellen, dass df_openliga eine standardisierte Spalte für das Heimteam besitzt.
     if "home_team_std" not in df_openliga.columns:
         for col in ["home_team", "teams.home.name", "team_h"]:
             if col in df_openliga.columns:
