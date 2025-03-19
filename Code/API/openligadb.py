@@ -52,31 +52,27 @@ class OpenLigaDBClient:
         df = pd.json_normalize(match_data)
         print("DEBUG: OpenLigaDB-Spalten:", df.columns.tolist())
 
-        # Versuche verschiedene mögliche Spalten für das Heimteam
         possible_team1_cols = [
-            "Team1.TeamName",   # Oft in älteren Saisons
-            "team1.teamName",   # Falls bereits flach normalisiert
-            "Team1",            # Dictionary mit Key "TeamName"
-            "team1",            # Dictionary mit Key "teamName"
-            "nameTeam1"         # Manche Datenquellen nutzen so einen Key
+            "Team1.TeamName",   
+            "team1.teamName",   
+            "Team1",            
+            "team1",           
+            "nameTeam1"         
         ]
         for col in possible_team1_cols:
             if col in df.columns:
                 print(f"DEBUG: Verwende Spalte '{col}' für das Heimteam.")
                 if col in ["Team1", "team1"]:
-                    # Falls das ein Dictionary ist, extrahiere den Key "teamName" oder "TeamName"
                     df["Team1.TeamName"] = df[col].apply(
                         lambda x: x.get("teamName") or x.get("TeamName") if isinstance(x, dict) else None
                     )
                     df["home_team_std"] = df["Team1.TeamName"].apply(standardize_team)
                 else:
-                    # col == "Team1.TeamName", "team1.teamName" oder "nameTeam1"
                     df["home_team_std"] = df[col].apply(standardize_team)
                 break
         else:
             print("WARNUNG: Keine geeignete Spalte für das Heimteam gefunden.")
 
-        # Versuche verschiedene mögliche Spalten für das Auswärtsteam
         possible_team2_cols = [
             "Team2.TeamName",
             "team2.teamName",
@@ -93,7 +89,6 @@ class OpenLigaDBClient:
                     )
                     df["away_team_std"] = df["Team2.TeamName"].apply(standardize_team)
                 else:
-                    # col == "Team2.TeamName", "team2.teamName" oder "nameTeam2"
                     df["away_team_std"] = df[col].apply(standardize_team)
                 break
         else:

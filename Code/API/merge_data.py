@@ -78,7 +78,6 @@ def merge_openligadb_csv(csv_path, matchdays=range(1, 35), league="bl1", season=
 
 if __name__ == "__main__":
     key = "2cedf059b44f953884d6476e481b8009"
-    # Verwende die existierende Datei im filtered-Ordner:
     csv_file = "/Users/nicolas/Desktop/Uni/Vorlesungen/2. Semester/Data Science Projekt/DS_Project/filtered/filtered_TeamsData.csv"
 
     print("Ausführen von merge_api_csv:")
