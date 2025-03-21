@@ -2,6 +2,7 @@ import pandas as pd
 from Code.API.api_client import ApiSportsClient
 from Code.API.team_mapping import standardize_team
 from Code.API.csv_analysis import load_csv_data
+import os
 
 def load_fixtures_to_df(api_key, league_id, season, data_dir="data"):
     """
@@ -47,7 +48,8 @@ def merge_api_csv(api_key, league_id, season, csv_path):
 
 if __name__ == "__main__":
     key = "2cedf059b44f953884d6476e481b8009"
-    csv_file = "/Users/nicolas/Desktop/Uni/Vorlesungen/2. Semester/Data Science Projekt/DS_Project/filtered/filtered_TeamsData.csv"
+    script_dir = os.path.dirname(__file__)
+    csv_file = os.path.join(script_dir, "../data/filtercsv/filtered_TeamsData.csv")
 
     print("Ausführen von merge_api_csv:")
     df_merged_api = merge_api_csv(key, 78, 2022, csv_file)
