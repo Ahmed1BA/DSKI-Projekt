@@ -1,6 +1,7 @@
 import pandas as pd
 from Code.API.merge_data import merge_api_csv 
 from Code.API.openligadb_table import get_current_bundesliga_table  
+import os
 
 def unify_goal_columns(df):
     """
@@ -120,9 +121,11 @@ def run_data_processing_pipeline(
     """
     # Standardpfade, falls nicht übergeben
     if teams_csv is None:
-        teams_csv = "/Users/nicolas/Desktop/Uni/Vorlesungen/2. Semester/Data Science Projekt/DS_Project/filtered/filtered_TeamsData.csv"
+        script_dir = os.path.dirname(__file__)
+        teams_csv = os.path.join(script_dir, "../data/filtercsv/filtered_TeamsData.csv")
     if players_csv is None:
-        players_csv = "/Users/nicolas/Desktop/Uni/Vorlesungen/2. Semester/Data Science Projekt/DS_Project/filtered/filtered_PlayersData_perYear.csv"
+        script_dir = os.path.dirname(__file__)
+        players_csv = os.path.join(script_dir, "../data/filtercsv/filtered_PlayersData_perYear.csv")
     
     # -------------------------
     # Tabellenmodus
