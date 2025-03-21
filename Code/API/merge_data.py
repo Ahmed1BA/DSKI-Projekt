@@ -15,7 +15,6 @@ def load_fixtures_to_df(api_key, league_id, season, data_dir="data"):
     fixtures = data.get("response", [])
     df = pd.json_normalize(fixtures)
     
-    # Standardisierte Teamnamen (home_team_std, away_team_std)
     if "teams.home.name" in df.columns and "teams.away.name" in df.columns:
         df["home_team_std"] = df["teams.home.name"].apply(standardize_team)
         df["away_team_std"] = df["teams.away.name"].apply(standardize_team)
@@ -47,7 +46,6 @@ def merge_api_csv(api_key, league_id, season, csv_path):
     return merged
 
 if __name__ == "__main__":
-    # Beispiel-Aufruf
     key = "2cedf059b44f953884d6476e481b8009"
     csv_file = "/Users/nicolas/Desktop/Uni/Vorlesungen/2. Semester/Data Science Projekt/DS_Project/filtered/filtered_TeamsData.csv"
 
@@ -55,3 +53,4 @@ if __name__ == "__main__":
     df_merged_api = merge_api_csv(key, 78, 2022, csv_file)
     print("Merged API/CSV shape:", df_merged_api.shape)
     print("Merged API/CSV columns:", df_merged_api.columns)
+    print(df_merged_api.head())

@@ -1,6 +1,6 @@
 import pandas as pd
-from Code.API.merge_data import merge_api_csv  # Nur noch ApiSports-Workflow
-from Code.API.openligadb_table import get_current_bundesliga_table  # Für den Tabellen-Modus
+from Code.API.merge_data import merge_api_csv 
+from Code.API.openligadb_table import get_current_bundesliga_table  
 
 def unify_goal_columns(df):
     """
@@ -141,9 +141,6 @@ def run_data_processing_pipeline(
                 "matches": pd.DataFrame()  # Keine Detail-Matchdaten
             }
     
-    # -------------------------
-    # Klassischer Modus (ApiSports + CSV)
-    # -------------------------
     else:
         df_merged = merge_api_csv(api_key, league_id=78, season=2022, csv_path=teams_csv)
         print("DEBUG: Gemergter DataFrame shape:", df_merged.shape)
@@ -153,22 +150,16 @@ def run_data_processing_pipeline(
             print("WARNUNG: Der gemergte DataFrame ist leer.")
             return {}, {}
         
-        # Tore-Spalten vereinheitlichen
         df_merged = unify_goal_columns(df_merged)
         
-        # Team-Statistiken aggregieren
         team_data = prepare_team_data(df_merged)
-    
-    # -------------------------
-    # Spieler-Daten laden
-    # -------------------------
+
     players_df = pd.read_csv(players_csv)
     team_players = prepare_player_data(players_df)
     
     return team_data, team_players
 
 if __name__ == "__main__":
-    # Beispiel: Tabellenmodus
     print("=== Tabellen-Modus ===")
     team_data, team_players = run_data_processing_pipeline(use_table=True)
     for t, data in team_data.items():
