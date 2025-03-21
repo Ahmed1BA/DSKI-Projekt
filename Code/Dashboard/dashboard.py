@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from Code.API.data_processing import run_data_processing_pipeline
+from data_processing import run_data_processing_pipeline
 
 def main():
     st.title("Bundesliga Dashboard (Prototyp)")

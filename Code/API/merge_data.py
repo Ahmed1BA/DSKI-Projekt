@@ -1,8 +1,8 @@
 import pandas as pd
-from Code.API.api_client import ApiSportsClient
-from Code.API.team_mapping import standardize_team
-from Code.API.csv_analysis import load_csv_data
 import os
+from .api_client import ApiSportsClient
+from .team_mapping import standardize_team
+from .csv_analysis import load_csv_data
 
 def load_fixtures_to_df(api_key, league_id, season, data_dir="data"):
     """
@@ -29,12 +29,10 @@ def merge_api_csv(api_key, league_id, season, csv_path):
     print("DEBUG: API DataFrame shape:", df_api.shape)
     print("DEBUG: API DataFrame head:\n", df_api.head())
 
-    # CSV laden
     df_csv = load_csv_data(csv_path, team_col="team_title")
     print("DEBUG: CSV DataFrame shape:", df_csv.shape)
     print("DEBUG: CSV DataFrame head:\n", df_csv.head())
 
-    # Falls in den CSV-Daten die standardisierte Team-Spalte noch fehlt, erzeugen
     if "team_name_std" not in df_csv.columns and "team_title" in df_csv.columns:
         df_csv["team_name_std"] = df_csv["team_title"].apply(standardize_team)
         print("DEBUG: Erzeugte Spalte 'team_name_std' in CSV-Daten.")
@@ -49,7 +47,7 @@ def merge_api_csv(api_key, league_id, season, csv_path):
 if __name__ == "__main__":
     key = "2cedf059b44f953884d6476e481b8009"
     script_dir = os.path.dirname(__file__)
-    csv_file = os.path.join(script_dir, "../data/filtercsv/filtered_TeamsData.csv")
+    csv_file = os.path.join(script_dir, "../../data/filtercsv/filtered_TeamsData.csv")
 
     print("Ausführen von merge_api_csv:")
     df_merged_api = merge_api_csv(key, 78, 2022, csv_file)
