@@ -71,7 +71,8 @@ def analyze_csv_data(df, label="DataFrame"):
     print(df.head())
 
 if __name__ == "__main__":
-    base_path = "/Users/nicolas/Desktop/Uni/Vorlesungen/2. Semester/Data Science Projekt/DS_Project/filtered"
+    script_dir = os.path.dirname(__file__)
+    base_path = os.path.join(script_dir, "../data/filtercsv")
     
     df_match_data, df_teams_data, df_players_data, df_matches = load_all_filtered_csvs(base_path)
     
