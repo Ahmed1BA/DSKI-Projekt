@@ -1,13 +1,15 @@
 import pandas as pd
-from Code.API.merge_data import merge_api_csv 
-from Code.API.openligadb_table import get_current_bundesliga_table  
+from .merge_data import merge_api_csv 
+from .openligadb_table import get_current_bundesliga_table  
 import os
 
 def unify_goal_columns(df):
     """
     Vereinheitlicht die Tore-Spalten in 'goals.home' und 'goals.away', falls möglich.
+    Falls die Tore als Strings vorliegen, werden sie in numerische Werte umgewandelt.
     """
     print("\nDEBUG unify_goal_columns: columns before rename:", df.columns.tolist())
+    
     if "goals.home" in df.columns and "goals.away" in df.columns:
         print("DEBUG: 'goals.home'/'goals.away' sind bereits vorhanden.")
     elif "score.fulltime.home" in df.columns and "score.fulltime.away" in df.columns:
@@ -19,6 +21,12 @@ def unify_goal_columns(df):
     else:
         print("WARNUNG: Weder 'goals.home'/'goals.away' noch 'score.fulltime.home'/'score.fulltime.away' vorhanden.")
         print("Evtl. liegen die Tore anderswo (z.B. in 'goals' als Liste).")
+
+    if "goals.home" in df.columns:
+        df["goals.home"] = pd.to_numeric(df["goals.home"], errors="coerce")
+    if "goals.away" in df.columns:
+        df["goals.away"] = pd.to_numeric(df["goals.away"], errors="coerce")
+        
     print("DEBUG unify_goal_columns: columns after rename:", df.columns.tolist(), "\n")
     return df
 
@@ -29,6 +37,8 @@ def prepare_team_data(df):
       - 'home_team_std' / 'away_team_std' für die Teamzuordnung
       - 'goals.home' / 'goals.away' für die Tore
       - ggf. Metriken wie xG, xGA, etc., falls vorhanden.
+    
+    Zusätzlich werden die Tordifferenz und Punkte (3 Punkte pro Sieg, 1 Punkt pro Unentschieden) berechnet.
     """
     teams = set(df['home_team_std']).union(set(df['away_team_std']))
     
@@ -83,7 +93,9 @@ def prepare_team_data(df):
             'draws': draws,
             'losses': losses,
             'goals_scored': goals_scored,
-            'goals_conceded': goals_conceded
+            'goals_conceded': goals_conceded,
+            'goal_difference': goals_scored - goals_conceded,
+            'points': wins * 3 + draws
         }
         stats.update(averages)
         
@@ -119,17 +131,13 @@ def run_data_processing_pipeline(
         Vereinheitlichen der Tor-Spalten und Aggregation der Team-Statistiken.
       - Laden der Spielerdaten und Gruppierung nach Team.
     """
-    # Standardpfade, falls nicht übergeben
     if teams_csv is None:
         script_dir = os.path.dirname(__file__)
-        teams_csv = os.path.join(script_dir, "../data/filtercsv/filtered_TeamsData.csv")
+        teams_csv = os.path.join(script_dir, "../../data/filtercsv/filtered_TeamsData.csv")
     if players_csv is None:
         script_dir = os.path.dirname(__file__)
-        players_csv = os.path.join(script_dir, "../data/filtercsv/filtered_PlayersData_perYear.csv")
+        players_csv = os.path.join(script_dir, "../../data/filtercsv/filtered_PlayersData_perYear.csv")
     
-    # -------------------------
-    # Tabellenmodus
-    # -------------------------
     if use_table:
         df_table = get_current_bundesliga_table(league, season)
         print("DEBUG: Aktuelle Tabelle shape:", df_table.shape)
@@ -141,7 +149,7 @@ def run_data_processing_pipeline(
                 continue
             team_data[team] = {
                 "stats": row.to_dict(),
-                "matches": pd.DataFrame()  # Keine Detail-Matchdaten
+                "matches": pd.DataFrame() 
             }
     
     else:
@@ -154,7 +162,6 @@ def run_data_processing_pipeline(
             return {}, {}
         
         df_merged = unify_goal_columns(df_merged)
-        
         team_data = prepare_team_data(df_merged)
 
     players_df = pd.read_csv(players_csv)
