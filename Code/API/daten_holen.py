@@ -1,6 +1,6 @@
 import json
-import Code.API.dictionary as dic
-
+import dictionary as dic
+from FootballMatch import *
 import requests
 
 api_key = '2cedf059b44f953884d6476e481b8009'
@@ -70,6 +70,6 @@ def spieldaten_2_mannschaften(team_id_1, team_id_2):
         print(f"Fehler: {response.status_code}")
 
 
-liga_aufrufen(78)
-mannschaft_aufrufen(dic.team_ids_bundesliga["FC Bayern München"])
-spieldaten_2_mannschaften(172, 160)
+# liga_aufrufen(78)
+# mannschaft_aufrufen(dic.team_ids_bundesliga["FC Bayern München"])
+spieldaten_2_mannschaften(dic.team_ids_bundesliga["VfB Stuttgart"], dic.team_ids_bundesliga["SC Freiburg"])
