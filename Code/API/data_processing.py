@@ -1,7 +1,10 @@
+import os
 import pandas as pd
+
 from .merge_data import merge_api_csv 
 from .openligadb_table import get_current_bundesliga_table  
-import os
+from .team_mapping import standardize_team
+
 
 def unify_goal_columns(df):
     """
@@ -29,6 +32,7 @@ def unify_goal_columns(df):
         
     print("DEBUG unify_goal_columns: columns after rename:", df.columns.tolist(), "\n")
     return df
+
 
 def prepare_team_data(df):
     """
@@ -106,14 +110,20 @@ def prepare_team_data(df):
     
     return team_data
 
+
 def prepare_player_data(players_df):
     """
-    Gruppiert die Spielerdaten nach Team (Spalte 'team_title').
+    Gruppiert die Spielerdaten nach dem standardisierten Teamnamen (Spalte 'team_name_std').
     """
     team_players = {}
-    for team, group in players_df.groupby("team_title"):
-        team_players[team] = group.reset_index(drop=True)
+    if "team_name_std" in players_df.columns:
+        for team, group in players_df.groupby("team_name_std"):
+            team_players[team] = group.reset_index(drop=True)
+    else:
+        for team, group in players_df.groupby("team_title"):
+            team_players[team] = group.reset_index(drop=True)
     return team_players
+
 
 def run_data_processing_pipeline(
     teams_csv=None,
@@ -131,11 +141,10 @@ def run_data_processing_pipeline(
         Vereinheitlichen der Tor-Spalten und Aggregation der Team-Statistiken.
       - Laden der Spielerdaten und Gruppierung nach Team.
     """
+    script_dir = os.path.dirname(__file__)
     if teams_csv is None:
-        script_dir = os.path.dirname(__file__)
         teams_csv = os.path.join(script_dir, "../../data/filtercsv/filtered_TeamsData.csv")
     if players_csv is None:
-        script_dir = os.path.dirname(__file__)
         players_csv = os.path.join(script_dir, "../../data/filtercsv/filtered_PlayersData_perYear.csv")
     
     if use_table:
@@ -147,9 +156,10 @@ def run_data_processing_pipeline(
             team = row.get("teamName")
             if not team:
                 continue
-            team_data[team] = {
+            std_team = standardize_team(team)
+            team_data[std_team] = {
                 "stats": row.to_dict(),
-                "matches": pd.DataFrame() 
+                "matches": pd.DataFrame()
             }
     
     else:
@@ -165,9 +175,13 @@ def run_data_processing_pipeline(
         team_data = prepare_team_data(df_merged)
 
     players_df = pd.read_csv(players_csv)
+    if "team_title" in players_df.columns:
+        players_df["team_name_std"] = players_df["team_title"].apply(standardize_team)
+
     team_players = prepare_player_data(players_df)
     
     return team_data, team_players
+
 
 if __name__ == "__main__":
     print("=== Tabellen-Modus ===")
