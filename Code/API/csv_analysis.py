@@ -1,81 +1,64 @@
 import pandas as pd
 import os
+import logging
 from .team_mapping import standardize_team
 
 def load_csv_data(csv_path, team_col=None):
-    """
-    Lädt eine CSV-Datei und, falls team_col angegeben wird und existiert,
-    standardisiert die Teamnamen und fügt die Spalte 'team_name_std' hinzu.
-    """
-    print(f"DEBUG: Versuche CSV zu laden: {csv_path}")
-    
     if not os.path.exists(csv_path):
-        print(f"DEBUG: Datei existiert nicht: {csv_path}")
+        logging.warning("Datei existiert nicht: %s", csv_path)
         return pd.DataFrame()
     
     try:
         df = pd.read_csv(csv_path)
+        logging.info("CSV geladen: %s (Shape: %s)", csv_path, df.shape)
     except Exception as e:
-        print("Fehler beim Einlesen der CSV-Datei:", e)
+        logging.error("Fehler beim Einlesen der CSV-Datei %s: %s", csv_path, e)
         return pd.DataFrame()
     
-    print(f"DEBUG: CSV erfolgreich geladen, Shape: {df.shape}")
-    print("DEBUG: Spalten:", df.columns.tolist())
-    
     if team_col is not None and team_col in df.columns:
-        print(f"DEBUG: Standardisiere Teamnamen in Spalte '{team_col}'.")
+        logging.info("Standardisiere Teamnamen in Spalte '%s'.", team_col)
         df["team_name_std"] = df[team_col].apply(standardize_team)
     elif team_col is not None:
-        print(f"WARNUNG: Spalte '{team_col}' nicht gefunden. Keine Standardisierung.")
+        logging.warning("Spalte '%s' nicht gefunden. Keine Standardisierung.", team_col)
     
     return df
 
 def load_all_filtered_csvs(base_path):
-    """
-    Liest alle vier gefilterten CSV-Dateien aus dem angegebenen Ordner ein.
-    Erwartete Dateien:
-      - filtered_MatchData.csv
-      - filtered_TeamsData.csv
-      - filtered_PlayersData_perYear.csv
-      - filtered_Matches.csv
-    """
-    match_data_path   = os.path.join(base_path, "filtered_MatchData.csv")
-    teams_data_path   = os.path.join(base_path, "filtered_TeamsData.csv")
-    players_data_path = os.path.join(base_path, "filtered_PlayersData_perYear.csv")
-    matches_path      = os.path.join(base_path, "filtered_Matches.csv")
-    
-    df_match_data   = load_csv_data(match_data_path, team_col=None)
-    df_teams_data   = load_csv_data(teams_data_path, team_col="team_title")
-    df_players_data = load_csv_data(players_data_path, team_col=None)
-    df_matches      = load_csv_data(matches_path, team_col=None)
+    files = {
+        "match_data":   ("filtered_MatchData.csv", None),
+        "teams_data":   ("filtered_TeamsData.csv", "team_title"),
+        "players_data": ("filtered_PlayersData_perYear.csv", None),
+        "matches":      ("filtered_Matches.csv", None)
+    }
 
-    print("\n=== Zusammenfassung aller geladenen DataFrames ===")
-    print("MatchData Shape:",   df_match_data.shape)
-    print("TeamsData Shape:",   df_teams_data.shape)
-    print("PlayersData Shape:", df_players_data.shape)
-    print("Matches Shape:",     df_matches.shape)
-    
-    return df_match_data, df_teams_data, df_players_data, df_matches
+    dfs = {}
+    for key, (filename, team_col) in files.items():
+        path = os.path.join(base_path, filename)
+        dfs[key] = load_csv_data(path, team_col)
+
+    for key, df in dfs.items():
+        logging.info("Geladen: %-15s → %s Zeilen", key, df.shape[0])
+
+    return dfs["match_data"], dfs["teams_data"], dfs["players_data"], dfs["matches"]
 
 def analyze_csv_data(df, label="DataFrame"):
-    """
-    Gibt grundlegende Informationen zu einem DataFrame aus.
-    """
     if df.empty:
-        print(f"{label} ist leer oder konnte nicht geladen werden.")
+        logging.warning("%s ist leer oder konnte nicht geladen werden.", label)
         return
-    
-    print(f"\n=== Analyse: {label} ===")
-    print("Shape:", df.shape)
-    print("Spalten:", df.columns.tolist())
-    print(df.head())
+    logging.info("=== Analyse: %s ===", label)
+    logging.info("Shape: %s", df.shape)
+    logging.info("Spalten: %s", df.columns.tolist())
+    logging.debug("\n%s", df.head())
 
 if __name__ == "__main__":
+    from ..logging_config import setup_logging
+    setup_logging("logs/csv_analysis.log")
+
     script_dir = os.path.dirname(__file__)
     base_path = os.path.join(script_dir, "../../data/filtercsv")
-    
+
     df_match_data, df_teams_data, df_players_data, df_matches = load_all_filtered_csvs(base_path)
-    
+
     analyze_csv_data(df_match_data,   label="MatchData")
     analyze_csv_data(df_teams_data,   label="TeamsData")
     analyze_csv_data(df_players_data, label="PlayersData")
