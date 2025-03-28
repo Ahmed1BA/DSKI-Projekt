@@ -1,7 +1,9 @@
+BAYERN = "bayern münchen"
+
 TEAM_MAPPING = {
-    "bayern munich": "bayern münchen",
-    "bayern münchen": "bayern münchen",
-    "fc bayern": "bayern münchen",
+    "bayern munich": BAYERN,
+    "bayern münchen": BAYERN,
+    "fc bayern": BAYERN,
     "hertha bsc": "hertha bsc",
     "sc freiburg": "sc freiburg",
     "vfl wolfsburg": "vfl wolfsburg",
@@ -22,7 +24,9 @@ TEAM_MAPPING = {
     "1.fc köln": "1.fc köln"
 }
 
-def standardize_team(name):
+
+def standardize_team(name: str) -> str:
     if not isinstance(name, str):
         return name
-    return TEAM_MAPPING.get(name.lower().strip(), name.lower().strip())
+    name_clean = name.lower().strip()
+    return TEAM_MAPPING.get(name_clean, name_clean)

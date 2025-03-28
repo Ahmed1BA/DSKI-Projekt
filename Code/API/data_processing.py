@@ -1,168 +1,145 @@
 import os
 import pandas as pd
+import logging
 
 from .merge_data import merge_api_csv
 from .openligadb_table import get_current_bundesliga_table
 from .team_mapping import standardize_team
 
+GOALS_HOME = "goals.home"
+GOALS_AWAY = "goals.away"
+SCORE_HOME = "score.fulltime.home"
+SCORE_AWAY = "score.fulltime.away"
+
+
 def unify_goal_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Vereinheitlicht die Tore-Spalten in 'goals.home' und 'goals.away'.
-    Falls Tore als Strings vorliegen, werden sie numerisch konvertiert.
-    """
-    print("\nDEBUG unify_goal_columns: columns before rename:", df.columns.tolist())
-    
-    if "goals.home" in df.columns and "goals.away" in df.columns:
-        print("DEBUG: 'goals.home'/'goals.away' sind bereits vorhanden.")
-    elif "score.fulltime.home" in df.columns and "score.fulltime.away" in df.columns:
-        print("DEBUG: Benenne 'score.fulltime.home'/'score.fulltime.away' um in 'goals.home'/'goals.away'.")
-        df.rename(columns={
-            "score.fulltime.home": "goals.home",
-            "score.fulltime.away": "goals.away"
-        }, inplace=True)
+    logging.debug("Spalten vor Umbenennung: %s", df.columns.tolist())
+
+    if GOALS_HOME in df.columns and GOALS_AWAY in df.columns:
+        logging.debug("'%s'/'%s' sind bereits vorhanden.", GOALS_HOME, GOALS_AWAY)
+    elif SCORE_HOME in df.columns and SCORE_AWAY in df.columns:
+        logging.debug("Benenne '%s'/'%s' → '%s'/'%s'", SCORE_HOME, SCORE_AWAY, GOALS_HOME, GOALS_AWAY)
+        df.rename(columns={SCORE_HOME: GOALS_HOME, SCORE_AWAY: GOALS_AWAY}, inplace=True)
     else:
-        print("WARNUNG: Keine bekannten Tore-Spalten gefunden.")
-    
-    if "goals.home" in df.columns:
-        df["goals.home"] = pd.to_numeric(df["goals.home"], errors="coerce")
-    if "goals.away" in df.columns:
-        df["goals.away"] = pd.to_numeric(df["goals.away"], errors="coerce")
-        
-    print("DEBUG unify_goal_columns: columns after rename:", df.columns.tolist(), "\n")
+        logging.warning("Keine bekannten Tore-Spalten gefunden.")
+
+    if GOALS_HOME in df.columns:
+        df[GOALS_HOME] = pd.to_numeric(df[GOALS_HOME], errors="coerce")
+    if GOALS_AWAY in df.columns:
+        df[GOALS_AWAY] = pd.to_numeric(df[GOALS_AWAY], errors="coerce")
+
+    logging.debug("Spalten nach Umbenennung: %s", df.columns.tolist())
     return df
 
+
+def compute_team_stats(df: pd.DataFrame, team: str, metrics: list) -> dict:
+    team_matches = df[(df['home_team_std'] == team) | (df['away_team_std'] == team)]
+
+    wins = draws = losses = 0
+    goals_scored = goals_conceded = 0
+    metric_sums = {m: 0.0 for m in metrics}
+
+    for _, row in team_matches.iterrows():
+        is_home = row['home_team_std'] == team
+        home_goals = row.get(GOALS_HOME, 0)
+        away_goals = row.get(GOALS_AWAY, 0)
+
+        scored = home_goals if is_home else away_goals
+        conceded = away_goals if is_home else home_goals
+
+        goals_scored += scored
+        goals_conceded += conceded
+
+        if scored > conceded:
+            wins += 1
+        elif scored == conceded:
+            draws += 1
+        else:
+            losses += 1
+
+        for m in metrics:
+            metric_sums[m] += row[m]
+
+    num_matches = len(team_matches)
+    averages = {
+        f"avg_{m}": (metric_sums[m] / num_matches) if num_matches > 0 else None
+        for m in metrics
+    }
+
+    stats = {
+        'matches': num_matches,
+        'wins': wins,
+        'draws': draws,
+        'losses': losses,
+        'goals_scored': goals_scored,
+        'goals_conceded': goals_conceded,
+        'goal_difference': goals_scored - goals_conceded,
+        'points': wins * 3 + draws,
+        **averages
+    }
+
+    return {
+        'matches': team_matches,
+        'stats': stats
+    }
+
+
 def prepare_team_data(df: pd.DataFrame) -> dict:
-    """
-    Aggregiert Spielstatistiken für jedes Team aus dem gemergten DataFrame.
-    Nutzt 'home_team_std' / 'away_team_std' und Tore-Spalten (goals.home/away).
-    Berechnet zusätzlich Tordifferenz, Punkte und Durchschnittswerte.
-    """
     teams = set(df['home_team_std']).union(set(df['away_team_std']))
-    
+
     metrics = [
         'xG', 'xGA', 'npxG', 'npxGA', 'ppda_att', 'ppda_def',
         'ppda_allowed_att', 'ppda_allowed_def', 'deep', 'deep_allowed',
         'scored', 'missed', 'xpts', 'npxGD'
     ]
     metrics = [m for m in metrics if m in df.columns]
-    
-    team_data = {}
-    for team in teams:
-        team_matches = df[(df['home_team_std'] == team) | (df['away_team_std'] == team)]
-        
-        wins = draws = losses = 0
-        goals_scored = goals_conceded = 0
-        metric_sums = {m: 0.0 for m in metrics}
-        
-        for _, row in team_matches.iterrows():
-            if row['home_team_std'] == team:
-                home_goals = row.get('goals.home', 0)
-                away_goals = row.get('goals.away', 0)
-                goals_scored += home_goals
-                goals_conceded += away_goals
-                if home_goals > away_goals:
-                    wins += 1
-                elif home_goals == away_goals:
-                    draws += 1
-                else:
-                    losses += 1
-                for m in metrics:
-                    metric_sums[m] += row[m]
-            else:
-                home_goals = row.get('goals.home', 0)
-                away_goals = row.get('goals.away', 0)
-                goals_scored += away_goals
-                goals_conceded += home_goals
-                if away_goals > home_goals:
-                    wins += 1
-                elif away_goals == home_goals:
-                    draws += 1
-                else:
-                    losses += 1
-                for m in metrics:
-                    metric_sums[m] += row[m]
-        
-        num_matches = len(team_matches)
-        averages = {f"avg_{m}": (metric_sums[m] / num_matches) if num_matches > 0 else None for m in metric_sums}
-        
-        stats = {
-            'matches': num_matches,
-            'wins': wins,
-            'draws': draws,
-            'losses': losses,
-            'goals_scored': goals_scored,
-            'goals_conceded': goals_conceded,
-            'goal_difference': goals_scored - goals_conceded,
-            'points': wins * 3 + draws
-        }
-        stats.update(averages)
-        
-        team_data[team] = {
-            'matches': team_matches,
-            'stats': stats
-        }
-    
-    return team_data
+
+    return {team: compute_team_stats(df, team, metrics) for team in teams}
+
 
 def prepare_player_data(players_df: pd.DataFrame) -> dict:
-    """
-    Gruppiert Spielerdaten nach dem standardisierten Teamnamen (Spalte 'team_name_std').
-    """
     team_players = {}
-    if "team_name_std" in players_df.columns:
-        for team, group in players_df.groupby("team_name_std"):
-            team_players[team] = group.reset_index(drop=True)
-    else:
-        for team, group in players_df.groupby("team_title"):
-            team_players[team] = group.reset_index(drop=True)
+    group_col = "team_name_std" if "team_name_std" in players_df.columns else "team_title"
+
+    for team, group in players_df.groupby(group_col):
+        team_players[team] = group.reset_index(drop=True)
+
     return team_players
 
+
 def prepare_filtered_matches(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Standardisiert das CSV 'filtered_Matches':
-      - 'team_h' und 'team_a' werden standardisiert (-> home_team_std/away_team_std)
-      - Spalten, die mit 'h_' bzw. 'a_' beginnen, werden in 'home_*' bzw. 'away_*' umbenannt.
-      - Optional: Tore-Spalten (home_goals/away_goals) werden in 'goals.home'/'goals.away' überführt.
-    """
     if 'team_h' in df.columns:
         df['home_team_std'] = df['team_h'].apply(standardize_team)
     if 'team_a' in df.columns:
         df['away_team_std'] = df['team_a'].apply(standardize_team)
-    
-    rename_dict = {}
-    for col in df.columns:
-        if col.startswith('h_'):
-            rename_dict[col] = 'home_' + col[2:]
-        elif col.startswith('a_'):
-            rename_dict[col] = 'away_' + col[2:]
+
+    rename_dict = {
+        col: 'home_' + col[2:] if col.startswith('h_') else 'away_' + col[2:]
+        for col in df.columns if col.startswith(('h_', 'a_'))
+    }
     df.rename(columns=rename_dict, inplace=True)
-    
-    if 'home_goals' in df.columns:
-        df.rename(columns={'home_goals': 'goals.home'}, inplace=True)
-    if 'away_goals' in df.columns:
-        df.rename(columns={'away_goals': 'goals.away'}, inplace=True)
-    
+
+    df.rename(columns={
+        'home_goals': GOALS_HOME,
+        'away_goals': GOALS_AWAY
+    }, inplace=True)
+
     return df
 
+
 def prepare_filtered_match_data(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Standardisiert das CSV 'filtered_MatchData':
-      - 'home_team' und 'away_team' werden standardisiert (-> home_team_std/away_team_std)
-      - 'home_goals' und 'away_goals' werden in 'score.fulltime.home'/'score.fulltime.away' umbenannt,
-        um dann mit unify_goal_columns in 'goals.home'/'goals.away' überführt zu werden.
-    """
     if 'home_team' in df.columns:
         df['home_team_std'] = df['home_team'].apply(standardize_team)
     if 'away_team' in df.columns:
         df['away_team_std'] = df['away_team'].apply(standardize_team)
-    
-    if 'home_goals' in df.columns:
-        df.rename(columns={'home_goals': 'score.fulltime.home'}, inplace=True)
-    if 'away_goals' in df.columns:
-        df.rename(columns={'away_goals': 'score.fulltime.away'}, inplace=True)
-    
-    df = unify_goal_columns(df)
-    return df
+
+    df.rename(columns={
+        'home_goals': SCORE_HOME,
+        'away_goals': SCORE_AWAY
+    }, inplace=True)
+
+    return unify_goal_columns(df)
+
 
 def run_data_processing_pipeline(
     teams_csv: str = None,
@@ -174,35 +151,17 @@ def run_data_processing_pipeline(
     season: str = "2024",
     api_key: str = "2cedf059b44f953884d6476e481b8009"
 ):
-    """
-    Lädt und verarbeitet alle 4 CSVs:
-      1) Teams (filtered_TeamsData.csv)
-      2) Spieler (filtered_PlayersData_perYear.csv)
-      3) Matches (filtered_Matches.csv)
-      4) MatchData (filtered_MatchData.csv)
-    
-    - Im Tabellen-Modus (use_table=True) wird die aktuelle Bundesliga-Tabelle (OpenLigaDB) genutzt.
-    - Im klassischen Modus wird die API (merge_api_csv) mit dem Teams-CSV gemergt, standardisiert und aggregiert.
-    - Die Spieler-Daten werden ebenfalls standardisiert.
-    - Matches und MatchData werden getrennt standardisiert.
-    
-    Rückgabe:
-      (team_data, team_players, df_matches, df_match_data)
-    """
     script_dir = os.path.dirname(__file__)
-    if teams_csv is None:
-        teams_csv = os.path.join(script_dir, "../../data/filtercsv/filtered_TeamsData.csv")
-    if players_csv is None:
-        players_csv = os.path.join(script_dir, "../../data/filtercsv/filtered_PlayersData_perYear.csv")
-    if matches_csv is None:
-        matches_csv = os.path.join(script_dir, "../../data/filtercsv/filtered_Matches.csv")
-    if match_data_csv is None:
-        match_data_csv = os.path.join(script_dir, "../../data/filtercsv/filtered_MatchData.csv")
+    data_dir = os.path.abspath(os.path.join(script_dir, "../../data/filtercsv"))
 
-    # 1) Teams-Daten
+    teams_csv = teams_csv or os.path.join(data_dir, "filtered_TeamsData.csv")
+    players_csv = players_csv or os.path.join(data_dir, "filtered_PlayersData_perYear.csv")
+    matches_csv = matches_csv or os.path.join(data_dir, "filtered_Matches.csv")
+    match_data_csv = match_data_csv or os.path.join(data_dir, "filtered_MatchData.csv")
+
     if use_table:
         df_table = get_current_bundesliga_table(league, season)
-        print("DEBUG: Aktuelle Tabelle shape:", df_table.shape)
+        logging.info("Tabelle geladen, Shape: %s", df_table.shape)
         team_data = {}
         for _, row in df_table.iterrows():
             raw_team = row.get("teamName")
@@ -215,40 +174,39 @@ def run_data_processing_pipeline(
             }
     else:
         df_merged = merge_api_csv(api_key, league_id=78, season=2022, csv_path=teams_csv)
-        print("DEBUG: Gemergter DataFrame shape:", df_merged.shape)
-        print("DEBUG: Gemergte Spalten:", df_merged.columns.tolist())
-        
+        logging.info("Gemergter DataFrame geladen, Shape: %s", df_merged.shape)
+
         if df_merged.empty:
-            print("WARNUNG: Der gemergte DataFrame ist leer.")
+            logging.warning("Gemergter DataFrame ist leer – Abbruch.")
             return {}, {}, pd.DataFrame(), pd.DataFrame()
-        
+
         df_merged = unify_goal_columns(df_merged)
         team_data = prepare_team_data(df_merged)
-    
-    # 2) Spieler-Daten
+
     players_df = pd.read_csv(players_csv)
     if "team_title" in players_df.columns:
         players_df["team_name_std"] = players_df["team_title"].apply(standardize_team)
     team_players = prepare_player_data(players_df)
-    
-    # 3) Matches-Daten
+
     df_matches = pd.read_csv(matches_csv)
     df_matches = prepare_filtered_matches(df_matches)
-    
-    # 4) MatchData-Daten
+
     df_match_data = pd.read_csv(match_data_csv)
     df_match_data = prepare_filtered_match_data(df_match_data)
-    
+
     return team_data, team_players, df_matches, df_match_data
 
 
 if __name__ == "__main__":
-    print("=== Tabellen-Modus ===")
-    td_table, tp_table, matches_table, mdata_table = run_data_processing_pipeline(use_table=True)
-    print(f"TeamData Keys (Tabellenmodus): {list(td_table.keys())[:5]}")
-    print(f"Matches shape: {matches_table.shape}, MatchData shape: {mdata_table.shape}")
+    from ..logging_config import setup_logging
+    setup_logging("logs/data_processing.log")
 
-    print("\n=== Klassischer Modus (ApiSports) ===")
+    logging.info("=== Tabellen-Modus ===")
+    td_table, tp_table, matches_table, mdata_table = run_data_processing_pipeline(use_table=True)
+    logging.info("Teams (Tabelle): %d | Matches: %d | MatchData: %d",
+                 len(td_table), matches_table.shape[0], mdata_table.shape[0])
+
+    logging.info("=== Klassischer Modus (ApiSports) ===")
     td_api, tp_api, matches_api, mdata_api = run_data_processing_pipeline(use_table=False)
-    print(f"TeamData Keys (Klassisch): {list(td_api.keys())[:5]}")
-    print(f"Matches shape: {matches_api.shape}, MatchData shape: {mdata_api.shape}")
+    logging.info("Teams (API): %d | Matches: %d | MatchData: %d",
+                 len(td_api), matches_api.shape[0], mdata_api.shape[0])
