@@ -16,63 +16,35 @@ class ApiSportsClient:
         os.makedirs(self.teams_dir, exist_ok=True)
         os.makedirs(self.fixtures_dir, exist_ok=True)
 
-    def get_league_data(self, league_id):
-        endpoint = f"leagues?id={league_id}"
+    def _fetch_and_save(self, endpoint: str, file_path: str):
         url = self.base_url + endpoint
         try:
-            response = requests.get(url, headers=self.headers)
+            response = requests.get(url, headers=self.headers, timeout=5)
             response.raise_for_status()
             data = response.json()
-            file_path = os.path.join(self.leagues_dir, f"{league_id}.json")
-            with open(file_path, "w") as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(data, f)
             return data
         except requests.exceptions.RequestException as e:
-            logging.error(f"Error fetching league data: {e}")
+            logging.error("Error fetching data from %s: %s", endpoint, e)
             return None
+
+    def get_league_data(self, league_id):
+        endpoint = f"leagues?id={league_id}"
+        file_path = os.path.join(self.leagues_dir, f"{league_id}.json")
+        return self._fetch_and_save(endpoint, file_path)
 
     def get_team_data(self, team_id):
         endpoint = f"teams?id={team_id}"
-        url = self.base_url + endpoint
-        try:
-            response = requests.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            file_path = os.path.join(self.teams_dir, f"{team_id}.json")
-            with open(file_path, "w") as f:
-                json.dump(data, f)
-            return data
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Error fetching team data: {e}")
-            return None
+        file_path = os.path.join(self.teams_dir, f"{team_id}.json")
+        return self._fetch_and_save(endpoint, file_path)
 
     def get_headtohead_data(self, team_id1, team_id2):
         endpoint = f"fixtures/headtohead?h2h={team_id2}-{team_id1}"
-        url = self.base_url + endpoint
-        try:
-            response = requests.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            file_path = os.path.join(self.fixtures_dir, f"{team_id1}_{team_id2}.json")
-            with open(file_path, "w") as f:
-                json.dump(data, f)
-            return data
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Error fetching head-to-head data: {e}")
-            return None
+        file_path = os.path.join(self.fixtures_dir, f"{team_id1}_{team_id2}.json")
+        return self._fetch_and_save(endpoint, file_path)
 
     def get_fixtures(self, league_id, season):
         endpoint = f"fixtures?league={league_id}&season={season}"
-        url = self.base_url + endpoint
-        try:
-            response = requests.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-            file_name = f"{league_id}_{season}.json"
-            file_path = os.path.join(self.fixtures_dir, file_name)
-            with open(file_path, "w") as f:
-                json.dump(data, f)
-            return data
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Error fetching fixtures for league {league_id}, season {season}: {e}")
-            return None
+        file_path = os.path.join(self.fixtures_dir, f"{league_id}_{season}.json")
+        return self._fetch_and_save(endpoint, file_path)
