@@ -7,8 +7,8 @@ from .team_mapping import standardize_team
 
 def unify_goal_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Vereinheitlicht die Tore-Spalten in 'goals.home' und 'goals.away', falls möglich.
-    Falls die Tore als Strings vorliegen, werden sie in numerische Werte umgewandelt.
+    Vereinheitlicht die Tore-Spalten in 'goals.home' und 'goals.away'.
+    Falls Tore als Strings vorliegen, werden sie numerisch konvertiert.
     """
     print("\nDEBUG unify_goal_columns: columns before rename:", df.columns.tolist())
     
@@ -21,8 +21,8 @@ def unify_goal_columns(df: pd.DataFrame) -> pd.DataFrame:
             "score.fulltime.away": "goals.away"
         }, inplace=True)
     else:
-        print("WARNUNG: Keine bekannten Tore-Spalten gefunden (goals.home / score.fulltime.home).")
-
+        print("WARNUNG: Keine bekannten Tore-Spalten gefunden.")
+    
     if "goals.home" in df.columns:
         df["goals.home"] = pd.to_numeric(df["goals.home"], errors="coerce")
     if "goals.away" in df.columns:
@@ -31,15 +31,11 @@ def unify_goal_columns(df: pd.DataFrame) -> pd.DataFrame:
     print("DEBUG unify_goal_columns: columns after rename:", df.columns.tolist(), "\n")
     return df
 
-
 def prepare_team_data(df: pd.DataFrame) -> dict:
     """
-    Aggregiert die Spielstatistiken für jedes Team aus dem gemergten DataFrame (API + Teams-CSV).
-    Nutzt:
-      - 'home_team_std' / 'away_team_std' für die Teamzuordnung
-      - 'goals.home' / 'goals.away' für die Tore
-      - ggf. Metriken wie xG, xGA, etc.
-    Zusätzlich werden Tordifferenz und Punkte (3 pro Sieg, 1 pro Unentschieden) berechnet.
+    Aggregiert Spielstatistiken für jedes Team aus dem gemergten DataFrame.
+    Nutzt 'home_team_std' / 'away_team_std' und Tore-Spalten (goals.home/away).
+    Berechnet zusätzlich Tordifferenz, Punkte und Durchschnittswerte.
     """
     teams = set(df['home_team_std']).union(set(df['away_team_std']))
     
@@ -87,10 +83,7 @@ def prepare_team_data(df: pd.DataFrame) -> dict:
                     metric_sums[m] += row[m]
         
         num_matches = len(team_matches)
-        averages = {
-            f"avg_{m}": (metric_sums[m] / num_matches) if num_matches > 0 else None
-            for m in metric_sums
-        }
+        averages = {f"avg_{m}": (metric_sums[m] / num_matches) if num_matches > 0 else None for m in metric_sums}
         
         stats = {
             'matches': num_matches,
@@ -111,11 +104,9 @@ def prepare_team_data(df: pd.DataFrame) -> dict:
     
     return team_data
 
-
 def prepare_player_data(players_df: pd.DataFrame) -> dict:
     """
-    Gruppiert die Spielerdaten nach 'team_name_std' (falls vorhanden),
-    sonst nach 'team_title'.
+    Gruppiert Spielerdaten nach dem standardisierten Teamnamen (Spalte 'team_name_std').
     """
     team_players = {}
     if "team_name_std" in players_df.columns:
@@ -126,15 +117,13 @@ def prepare_player_data(players_df: pd.DataFrame) -> dict:
             team_players[team] = group.reset_index(drop=True)
     return team_players
 
-
 def prepare_filtered_matches(df: pd.DataFrame) -> pd.DataFrame:
     """
     Standardisiert das CSV 'filtered_Matches':
-      - 'team_h' => 'home_team_std', 'team_a' => 'away_team_std'
-      - Spalten, die mit 'h_' oder 'a_' beginnen, werden umbenannt in 'home_*' / 'away_*'
-      - 'home_goals' / 'away_goals' => 'goals.home' / 'goals.away' (optional)
+      - 'team_h' und 'team_a' werden standardisiert (-> home_team_std/away_team_std)
+      - Spalten, die mit 'h_' bzw. 'a_' beginnen, werden in 'home_*' bzw. 'away_*' umbenannt.
+      - Optional: Tore-Spalten (home_goals/away_goals) werden in 'goals.home'/'goals.away' überführt.
     """
-    # Standardisiere Home/Away-Teams
     if 'team_h' in df.columns:
         df['home_team_std'] = df['team_h'].apply(standardize_team)
     if 'team_a' in df.columns:
@@ -155,13 +144,12 @@ def prepare_filtered_matches(df: pd.DataFrame) -> pd.DataFrame:
     
     return df
 
-
 def prepare_filtered_match_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Standardisiert das CSV 'filtered_MatchData':
-      - 'home_team' => 'home_team_std', 'away_team' => 'away_team_std'
-      - 'home_goals' => 'score.fulltime.home', 'away_goals' => 'score.fulltime.away'
-        => unify_goal_columns => 'goals.home'/'goals.away'
+      - 'home_team' und 'away_team' werden standardisiert (-> home_team_std/away_team_std)
+      - 'home_goals' und 'away_goals' werden in 'score.fulltime.home'/'score.fulltime.away' umbenannt,
+        um dann mit unify_goal_columns in 'goals.home'/'goals.away' überführt zu werden.
     """
     if 'home_team' in df.columns:
         df['home_team_std'] = df['home_team'].apply(standardize_team)
@@ -172,10 +160,9 @@ def prepare_filtered_match_data(df: pd.DataFrame) -> pd.DataFrame:
         df.rename(columns={'home_goals': 'score.fulltime.home'}, inplace=True)
     if 'away_goals' in df.columns:
         df.rename(columns={'away_goals': 'score.fulltime.away'}, inplace=True)
-
+    
     df = unify_goal_columns(df)
     return df
-
 
 def run_data_processing_pipeline(
     teams_csv: str = None,
@@ -188,23 +175,21 @@ def run_data_processing_pipeline(
     api_key: str = "2cedf059b44f953884d6476e481b8009"
 ):
     """
-    Erweitertes Pipeline-Skript, das alle 4 CSV-Dateien lädt und standardisiert:
+    Lädt und verarbeitet alle 4 CSVs:
       1) Teams (filtered_TeamsData.csv)
       2) Spieler (filtered_PlayersData_perYear.csv)
       3) Matches (filtered_Matches.csv)
       4) MatchData (filtered_MatchData.csv)
-
-    - Falls use_table=True: Bundesliga-Tabelle (OpenLigaDB) -> team_data
-    - Falls use_table=False: Merge ApiSports-Daten + Teams-CSV -> unify -> prepare_team_data -> team_data
-    - Spieler-Daten -> standardisieren -> team_players
-    - Matches-Daten -> standardisieren -> df_matches
-    - MatchData -> standardisieren -> df_match_data
-
+    
+    - Im Tabellen-Modus (use_table=True) wird die aktuelle Bundesliga-Tabelle (OpenLigaDB) genutzt.
+    - Im klassischen Modus wird die API (merge_api_csv) mit dem Teams-CSV gemergt, standardisiert und aggregiert.
+    - Die Spieler-Daten werden ebenfalls standardisiert.
+    - Matches und MatchData werden getrennt standardisiert.
+    
     Rückgabe:
       (team_data, team_players, df_matches, df_match_data)
     """
     script_dir = os.path.dirname(__file__)
-    
     if teams_csv is None:
         teams_csv = os.path.join(script_dir, "../../data/filtercsv/filtered_TeamsData.csv")
     if players_csv is None:
@@ -214,6 +199,7 @@ def run_data_processing_pipeline(
     if match_data_csv is None:
         match_data_csv = os.path.join(script_dir, "../../data/filtercsv/filtered_MatchData.csv")
 
+    # 1) Teams-Daten
     if use_table:
         df_table = get_current_bundesliga_table(league, season)
         print("DEBUG: Aktuelle Tabelle shape:", df_table.shape)
@@ -231,25 +217,28 @@ def run_data_processing_pipeline(
         df_merged = merge_api_csv(api_key, league_id=78, season=2022, csv_path=teams_csv)
         print("DEBUG: Gemergter DataFrame shape:", df_merged.shape)
         print("DEBUG: Gemergte Spalten:", df_merged.columns.tolist())
-
+        
         if df_merged.empty:
             print("WARNUNG: Der gemergte DataFrame ist leer.")
             return {}, {}, pd.DataFrame(), pd.DataFrame()
-
+        
         df_merged = unify_goal_columns(df_merged)
         team_data = prepare_team_data(df_merged)
-
+    
+    # 2) Spieler-Daten
     players_df = pd.read_csv(players_csv)
     if "team_title" in players_df.columns:
         players_df["team_name_std"] = players_df["team_title"].apply(standardize_team)
     team_players = prepare_player_data(players_df)
-
+    
+    # 3) Matches-Daten
     df_matches = pd.read_csv(matches_csv)
     df_matches = prepare_filtered_matches(df_matches)
-
+    
+    # 4) MatchData-Daten
     df_match_data = pd.read_csv(match_data_csv)
     df_match_data = prepare_filtered_match_data(df_match_data)
-
+    
     return team_data, team_players, df_matches, df_match_data
 
 
