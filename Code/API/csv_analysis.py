@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-from Code.API.team_mapping import standardize_team
+from .team_mapping import standardize_team
 
 def load_csv_data(csv_path, team_col=None):
     """
@@ -72,7 +72,7 @@ def analyze_csv_data(df, label="DataFrame"):
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(__file__)
-    base_path = os.path.join(script_dir, "../data/filtercsv")
+    base_path = os.path.join(script_dir, "../../data/filtercsv")
     
     df_match_data, df_teams_data, df_players_data, df_matches = load_all_filtered_csvs(base_path)
     
