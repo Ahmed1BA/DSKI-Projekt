@@ -1,7 +1,8 @@
 import pandas as pd
 import os
 import logging
-from .team_mapping import standardize_team
+
+from ..mapping.team_mapping import standardize_team
 
 def load_csv_data(csv_path, team_col=None):
     if not os.path.exists(csv_path):

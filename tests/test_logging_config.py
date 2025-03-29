@@ -1,6 +1,6 @@
 import time
 import logging
-from Code.logging_config import setup_logging
+from src.logging_config import setup_logging
 
 
 def test_setup_logging_creates_log_file(tmp_path):

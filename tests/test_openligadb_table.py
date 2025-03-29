@@ -1,7 +1,7 @@
 from unittest.mock import patch, MagicMock
 import pytest
 import pandas as pd
-from Code.API.openligadb_table import get_current_bundesliga_table
+from src.api.openligadb_table import get_current_bundesliga_table
 
 @patch("Code.API.openligadb_table.requests.get")
 def test_get_current_bundesliga_table_success(mock_get):

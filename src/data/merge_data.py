@@ -2,9 +2,9 @@ import os
 import logging
 import pandas as pd
 
-from .api_client import ApiSportsClient
-from .team_mapping import standardize_team
-from .csv_analysis import load_csv_data
+from ..api.api_client import ApiSportsClient
+from ..mapping.team_mapping import standardize_team
+from ..analysis.csv_analysis import load_csv_data
 
 
 def load_fixtures_to_df(api_key, league_id, season, data_dir="data") -> pd.DataFrame:

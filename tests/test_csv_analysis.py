@@ -1,8 +1,9 @@
-import os
+from unittest.mock import patch
+
 import pandas as pd
 import pytest
-from unittest.mock import patch
-from Code.API.csv_analysis import load_csv_data, load_all_filtered_csvs, analyze_csv_data
+
+from src.analysis.csv_analysis import load_csv_data, load_all_filtered_csvs, analyze_csv_data
 
 SAMPLE_CSV = "team_title,goals\nFC Bayern,3\nBorussia Dortmund,2"
 

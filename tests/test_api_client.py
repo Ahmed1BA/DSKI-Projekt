@@ -1,8 +1,7 @@
-import os
 from unittest.mock import patch, MagicMock
 import json
 import pytest
-from Code.API.api_client import ApiSportsClient
+from src.api.api_client import ApiSportsClient
 from requests.exceptions import RequestException
 
 @pytest.fixture

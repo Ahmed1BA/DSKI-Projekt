@@ -1,7 +1,7 @@
 import requests
 import numpy as np
 from scipy.stats import poisson
-from DSKI_Projekt.Code.API.team_mapping import standardize_team
+from ..mapping.team_mapping import standardize_team
 
 API_URL = "https://api.openligadb.de/getmatchdata/bl1"
 

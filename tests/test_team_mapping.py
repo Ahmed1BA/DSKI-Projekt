@@ -1,4 +1,4 @@
-from Code.API.team_mapping import standardize_team, BAYERN
+from src.mapping.team_mapping import standardize_team, BAYERN
 
 def test_standardize_known_team():
     assert standardize_team("FC Bayern") == BAYERN

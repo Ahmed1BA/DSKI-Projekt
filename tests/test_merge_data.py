@@ -1,7 +1,7 @@
 from unittest.mock import patch
 import pandas as pd
 import pytest
-from Code.API.merge_data import load_fixtures_to_df, merge_api_csv
+from src.data.merge_data import load_fixtures_to_df, merge_api_csv
 
 @pytest.fixture
 def sample_csv(tmp_path):

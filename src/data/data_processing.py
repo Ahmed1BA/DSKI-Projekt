@@ -2,9 +2,9 @@ import os
 import pandas as pd
 import logging
 
-from .merge_data import merge_api_csv
-from .openligadb_table import get_current_bundesliga_table
-from .team_mapping import standardize_team
+from ..data.merge_data import merge_api_csv
+from ..api.openligadb_table import get_current_bundesliga_table
+from ..mapping.team_mapping import standardize_team
 
 GOALS_HOME = "goals.home"
 GOALS_AWAY = "goals.away"
