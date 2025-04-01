@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..data.data_processing import run_data_processing_pipeline
-from ..analysis.poisson import calc_poisson_for_all_teams
+from DSKI_Projekt.src.data.data_processing import run_data_processing_pipeline
+from DSKI_Projekt.src.analysis.poisson import calc_poisson_for_all_teams
 
 def score_matrix(dist_home, dist_away):
     return np.outer(dist_home, dist_away)

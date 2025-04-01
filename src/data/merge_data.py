@@ -60,7 +60,7 @@ if __name__ == "__main__":
     logging.info("Ausführen von merge_api_csv")
     key = "2cedf059b44f953884d6476e481b8009"
     script_dir = os.path.dirname(__file__)
-    csv_file = os.path.join(script_dir, "../../data/filtercsv/filtered_TeamsData.csv")
+    csv_file = os.path.join(script_dir, "../../docs/filtercsv/filtered_TeamsData.csv")
 
     df_merged_api = merge_api_csv(key, 78, 2022, csv_file)
 

@@ -152,7 +152,7 @@ def run_data_processing_pipeline(
     api_key: str = "2cedf059b44f953884d6476e481b8009"
 ):
     script_dir = os.path.dirname(__file__)
-    data_dir = os.path.abspath(os.path.join(script_dir, "../../data/filtercsv"))
+    data_dir = os.path.abspath(os.path.join(script_dir, "../../docs/filtercsv"))
 
     teams_csv = teams_csv or os.path.join(data_dir, "filtered_TeamsData.csv")
     players_csv = players_csv or os.path.join(data_dir, "filtered_PlayersData_perYear.csv")

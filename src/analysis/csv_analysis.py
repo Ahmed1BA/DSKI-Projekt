@@ -56,7 +56,7 @@ if __name__ == "__main__":
     setup_logging("logs/csv_analysis.log")
 
     script_dir = os.path.dirname(__file__)
-    base_path = os.path.join(script_dir, "../../data/filtercsv")
+    base_path = os.path.join(script_dir, "../../docs/filtercsv")
 
     df_match_data, df_teams_data, df_players_data, df_matches = load_all_filtered_csvs(base_path)
 
