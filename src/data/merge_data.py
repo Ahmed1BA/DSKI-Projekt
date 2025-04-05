@@ -58,11 +58,11 @@ if __name__ == "__main__":
     setup_logging("logs/merge_data.log")
 
     logging.info("Ausführen von merge_api_csv")
-    key = "2cedf059b44f953884d6476e481b8009"
+    KEY = "77b732eab87dd53e0953cc52ad537946"
     script_dir = os.path.dirname(__file__)
     csv_file = os.path.join(script_dir, "../../docs/filtercsv/filtered_TeamsData.csv")
 
-    df_merged_api = merge_api_csv(key, 78, 2022, csv_file)
+    df_merged_api = merge_api_csv(KEY, 78, 2022, csv_file)
 
     logging.info("Merged API/CSV Shape: %s", df_merged_api.shape)
     logging.debug("Spalten: %s", df_merged_api.columns.tolist())
