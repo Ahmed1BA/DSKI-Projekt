@@ -19,9 +19,11 @@ class ApiSportsClient:
     def _fetch_and_save(self, endpoint: str, file_path: str):
         url = self.base_url + endpoint
         try:
+            logging.debug("Fetching URL: %s", url)
             response = requests.get(url, headers=self.headers, timeout=5)
             response.raise_for_status()
             data = response.json()
+            logging.debug("Response JSON: %s", data)
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(data, f)
             return data

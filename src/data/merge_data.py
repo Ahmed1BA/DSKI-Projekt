@@ -8,7 +8,6 @@ from ..analysis.csv_analysis import load_csv_data
 
 
 def load_fixtures_to_df(api_key, league_id, season, data_dir="data") -> pd.DataFrame:
-
     client = ApiSportsClient(api_key, data_dir=data_dir)
     data = client.get_fixtures(league_id, season)
 
@@ -17,22 +16,33 @@ def load_fixtures_to_df(api_key, league_id, season, data_dir="data") -> pd.DataF
         return pd.DataFrame()
 
     fixtures = data.get("response", [])
+    if not fixtures:
+        logging.warning("Keine Fixture-Daten in der API Response gefunden.")
+
     df = pd.json_normalize(fixtures)
 
     if "teams.home.name" in df.columns and "teams.away.name" in df.columns:
         df["home_team_std"] = df["teams.home.name"].apply(standardize_team)
         df["away_team_std"] = df["teams.away.name"].apply(standardize_team)
+    else:
+        logging.warning(
+    "Erwartete Spalten in API-Daten fehlen: "
+    "'teams.home.name' oder 'teams.away.name'"
+    )
+
 
     logging.info("API-Fixture-Daten geladen: %d Zeilen", df.shape[0])
+    logging.debug("API DataFrame Vorschau:\n%s", df.head())
     return df
 
 
 def merge_api_csv(api_key, league_id, season, csv_path) -> pd.DataFrame:
-
     df_api = load_fixtures_to_df(api_key, league_id, season)
     df_csv = load_csv_data(csv_path, team_col="team_title")
 
     logging.info("API-Daten Shape: %s | CSV-Daten Shape: %s", df_api.shape, df_csv.shape)
+    logging.debug("API DataFrame head:\n%s", df_api.head())
+    logging.debug("CSV DataFrame head:\n%s", df_csv.head())
 
     if df_api.empty or df_csv.empty:
         logging.warning("Eines der DataFrames ist leer. Merge wird abgebrochen.")
@@ -50,6 +60,7 @@ def merge_api_csv(api_key, league_id, season, csv_path) -> pd.DataFrame:
     )
 
     logging.info("Merge erfolgreich: %d Zeilen", merged.shape[0])
+    logging.debug("Merged DataFrame head:\n%s", merged.head())
     return merged
 
 
