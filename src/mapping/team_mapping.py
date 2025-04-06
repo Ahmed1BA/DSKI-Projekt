@@ -1,27 +1,38 @@
-BAYERN = "bayern münchen"
+BAYERN = "Bayern München"
+HOFFENHEIM = "1899 Hoffenheim"
+MAINZ = "FSV Mainz 05"
+UNION = "Union Berlin"
 
 TEAM_MAPPING = {
     "bayern munich": BAYERN,
     "bayern münchen": BAYERN,
     "fc bayern": BAYERN,
-    "hertha bsc": "hertha bsc",
-    "sc freiburg": "sc freiburg",
-    "vfl wolfsburg": "vfl wolfsburg",
-    "borussia mönchengladbach": "borussia mönchengladbach",
-    "fsv mainz 05": "fsv mainz 05",
-    "borussia dortmund": "borussia dortmund",
-    "1899 hoffenheim": "1899 hoffenheim",
-    "bayer leverkusen": "bayer leverkusen",
-    "eintracht frankfurt": "eintracht frankfurt",
-    "fc augsburg": "fc augsburg",
-    "vfb stuttgart": "vfb stuttgart",
-    "rb leipzig": "rb leipzig",
-    "hamburger sv": "hamburger sv",
-    "vfl bochum": "vfl bochum",
-    "spvgg greuther fürth": "spvgg greuther fürth",
-    "union berlin": "union berlin",
-    "arminia bielefeld": "arminia bielefeld",
-    "1.fc köln": "1.fc köln"
+    "fc bayern münchen": BAYERN,
+    "hertha bsc": "Hertha BSC",
+    "sc freiburg": "SC Freiburg",
+    "vfl wolfsburg": "VfL Wolfsburg",
+    "borussia mönchengladbach": "Borussia Mönchengladbach",
+    "fsv mainz 05": MAINZ,
+    "1. fsv mainz 05": MAINZ,
+    "borussia dortmund": "Borussia Dortmund",
+    "1899 hoffenheim": HOFFENHEIM,
+    "tsg 1899 hoffenheim": HOFFENHEIM,
+    "bayer leverkusen": "Bayer 04 Leverkusen",
+    "eintracht frankfurt": "Eintracht Frankfurt",
+    "fc augsburg": "FC Augsburg",
+    "vfb stuttgart": "VfB Stuttgart",
+    "rb leipzig": "Rb Leipzig",
+    "hamburger sv": "Hamburger SV",
+    "vfl bochum": "VfL Bochum",
+    "spvgg greuther fürth": "Spvgg Greuther Fürth",
+    "union berlin": UNION,
+    "1. fc union berlin": UNION,
+    "arminia bielefeld": "Arminia Bielefeld",
+    "1. fc heidenheim 1846": "1. FC Heidenheim 1846",
+    "holstein kiel": "Holstein Kiel",
+    "werder bremen": "Werder Bremen",
+    "fc st. pauli": "FC St. Pauli",
+    "1.fc köln": "1.FC Köln"
 }
 
 
