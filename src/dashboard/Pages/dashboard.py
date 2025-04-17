@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from DSKI_Projekt.src.data.data_processing import run_data_processing_pipeline
-from DSKI_Projekt.src.analysis.poisson import calc_poisson_for_all_teams
+from src.data.data_processing import run_data_processing_pipeline
+from src.analysis.poisson import calc_poisson_for_all_teams
 
 def score_matrix(dist_home, dist_away):
     return np.outer(dist_home, dist_away)
@@ -65,11 +65,16 @@ def main():
             st.write("### Aggregierte Statistiken")
             st.table(pd.DataFrame([stats]))
             matches = team_data[sel]["matches"]
+            st.write("Spalten in df_matches:", matches.columns.tolist())
+
             if not matches.empty:
                 st.write("### Letzte 5 Spiele")
                 st.dataframe(matches.tail(5))
+               
             else:
                 st.info("Keine Spieldaten für dieses Team.")
+            
+
         else:
             st.warning("Team nicht in den Daten enthalten.")
         st.write("### Spielerdaten")
@@ -122,6 +127,7 @@ def main():
         home_goals = idx // sm.shape[1]
         away_goals = idx % sm.shape[1]
         st.write(f"Most probable score: {team1} {home_goals} : {away_goals} {team2} mit {sm[home_goals, away_goals]:.2%}")
+
 
 if __name__ == "__main__":
     main()

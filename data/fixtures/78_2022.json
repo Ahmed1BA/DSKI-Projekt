@@ -1,0 +1,1 @@
+{"get": "fixtures", "parameters": {"league": "78", "season": "2022"}, "errors": {"access": "Your account is suspended, check on https://dashboard.api-football.com."}, "results": 0, "paging": {"current": 1, "total": 1}, "response": []}

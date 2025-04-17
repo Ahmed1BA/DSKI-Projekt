@@ -1,0 +1,24 @@
+
+
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+
+def safe_get(url, retries=3, timeout=10, backoff=1, fallback=None):
+    session = requests.Session()
+    retry_strategy = Retry(
+        total=retries,
+        backoff_factor=backoff,
+        status_forcelist=[429, 500, 502, 503, 504],
+        raise_on_status=False
+    )
+    session.mount("https://", HTTPAdapter(max_retries=retry_strategy))
+
+    try:
+        response = session.get(url, timeout=timeout)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"⚠️ Fehler beim Abrufen der URL {url}: {e}")
+        return fallback if fallback is not None else []
