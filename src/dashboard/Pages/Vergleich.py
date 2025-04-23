@@ -45,7 +45,7 @@ def main():
     
         
     with st.spinner("Verarbeite Daten..."):
-        team_data, team_players, df_matches, df_match_data = run_data_processing_pipeline(use_table=False)
+        team_data, team_players, df_matches, _ = run_data_processing_pipeline(use_table=False)
 
     if not team_data:
         st.warning("Keine verarbeiteten Team-Daten vorhanden.")
