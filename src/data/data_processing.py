@@ -149,7 +149,7 @@ def run_data_processing_pipeline(
     use_table: bool = False,
     league: str = "bl1",
     season: str = "2024",
-    api_key: str = "77b732eab87dd53e0953cc52ad537946"
+    api_key: str = "5ee9cc588b37627a3a5121834e07ed1c"
 ):
     script_dir = os.path.dirname(__file__)
     data_dir = os.path.abspath(os.path.join(script_dir, "../../docs/filtercsv"))

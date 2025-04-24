@@ -7,16 +7,17 @@ from src.data.data_processing import run_data_processing_pipeline
 from src.analysis.poisson import calc_poisson_for_all_teams
 
 
-# Layout so setzen, dass Streamlit die volle Fensterbreite nutzt:
-st.set_page_config(layout="wide", page_title="Bundesliga Dashboard")
+st.set_page_config(layout="wide", page_title="Einzelanalyse")
 
 def main():
 
-    st.title("Bundesliga Dashboard (Prototyp)")
+    st.title("Football Dashboard")
+    st.image("src/dashboard/pages/logo.png", width=100, use_container_width=False)
+
+    st.subheader("Einzelanalyse für ein Team")
     
-    # Sidebar: Einstellungen
     st.sidebar.header("Einstellungen")
-    league = st.sidebar.selectbox("Liga", ["bl1"])  # Nur Bundesliga
+    league = "bl1"
     season = st.sidebar.text_input("Saison", "2024")
     use_table = st.sidebar.checkbox("Nur Tabelle anzeigen (OpenLigaDB)", value=True)
     
@@ -25,28 +26,19 @@ def main():
 
     
     if not team_data:
-        st.warning("Keine verarbeiteten Team-Daten vorhanden.")
+        st.warning("Keine verarbeiteten Team-Daten vorhanden. --> Hilfe findest du in der README")
         return
     st.success("Aufbereitete Daten erfolgreich geladen!")
     
-    # Alle Teams sortiert auflisten
     teams = sorted(team_data.keys())
-    
-    
-        # ----------------------
-        # EINZELTEAM-ANSICHT
-        # ----------------------
     selected_team = st.selectbox("Team auswählen:", teams)
         
-    st.subheader(f"Statistiken für {selected_team}")
+    st.subheader(f"{selected_team}")
     stats = team_data[selected_team]["stats"]
         
-        # Als DataFrame für eine übersichtliche Darstellung
     stats_df = pd.DataFrame([stats], index=[selected_team]).T
-    st.dataframe(stats_df)  # dataFrame statt table -> scrollbar
-        # Club Logo
+    
     icon_url = stats_df[selected_team]["teamIconUrl"]
-        # Statistiken
     wins = stats_df[selected_team]["won"]
     lost = stats_df[selected_team]["lost"]
     draw = stats_df[selected_team]["draw"]
@@ -54,7 +46,7 @@ def main():
     goals = stats_df[selected_team]["goals"]
     goalsAgainst = stats_df[selected_team]["opponentGoals"]
     points = stats_df[selected_team]["points"]
-    st.write("### Statistiken")
+    st.write("### Statistiken aus der aktuellen Saison")
     st.write(f"Anzahl Spiele: {stats_df[selected_team]['matches']}")
     st.write(f"Anzahl Unentschieden: {draw}")
     st.write(f"Torverhältnis: {goals} : {goalsAgainst} ({goalDifference})")
@@ -62,18 +54,45 @@ def main():
     st.write(f"Anzahl Niederlagen: {lost}")
     st.write(f"Anzahl Siege: {wins}")
     st.image(icon_url, caption=f"Logo: {selected_team}",width=200)
-        # Nur im klassischen Modus gibt es Match-Daten
-    if not use_table:
-        if st.checkbox("Spieldaten anzeigen"):
-            st.subheader("Rohdaten der Spiele")
-            st.dataframe(team_data[selected_team]["matches"])
+    #Spielerdaten
+    def style_dataframe_top_bottom(df):
+            numeric_cols = df.select_dtypes(include="number").columns.tolist()
+            if 'year' in numeric_cols:
+                numeric_cols.remove('year')
+            styled = df.style.format(precision=2)\
+                .set_properties(**{"text-align": "center", "font-size": "14px"})\
+                .set_table_styles([
+                    {"selector": "thead th", "props": [
+                        ("background-color", "#f9f9f9"),
+                        ("font-weight", "bold")
+                    ]}
+                ])
+            for col in numeric_cols:
+                top_5 = df[col].nlargest(5)
+                bottom_5 = df[col].nsmallest(5)
+                styled = styled.apply(lambda row, top_5=top_5: ['background-color: green' if val in top_5.values else '' for val in row], subset=[col], axis=1)
+                styled = styled.apply(lambda row, bottom_5=bottom_5: ['background-color: yellow' if val in bottom_5.values else '' for val in row], subset=[col], axis=1)
+            return styled
+
+    def show_team_players(team_name):
         
-    st.subheader("Spielerdaten")
-    if selected_team in team_players:
-        st.dataframe(team_players[selected_team])
-    else:
-        st.info(f"Keine Spielerdaten für {selected_team} gefunden.")
-    
+            st.markdown(f"### Spielerdaten für **{team_name}**")
+            if team_name in team_players:
+                excluded_columns = ["id", "team_title", "team_name_std", "league", "time"]
+                df = team_players[team_name].drop(columns=excluded_columns, errors='ignore')
+                styled_df = style_dataframe_top_bottom(df)
+                st.dataframe(styled_df, use_container_width=True)
+            else:
+                st.info(f"Keine Spielerdaten für **{team_name}** gefunden.")
+
+    show_team_players(selected_team)
+    with st.expander("ℹ️ Farblegende"):
+            st.markdown("""
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <div style="width: 100px; height: 20px; background: #fee08b;"></div> 🟡 Besonders schwach<br>
+                <div style="width: 100px; height: 20px; background: #1a9850;"></div> 🟢 Starker Wert
+            </div>
+            """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()

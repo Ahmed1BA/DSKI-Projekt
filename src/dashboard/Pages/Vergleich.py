@@ -1,16 +1,16 @@
 import streamlit as st
 import pandas as pd
-import sys
-from pathlib import Path
+
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.express as px
 
 from src.data.data_processing import run_data_processing_pipeline
-from src.analysis.poisson import calc_poisson_for_all_teams
+from src.analysis.poisson import calc_poisson_for_all_teams  
+import matplotlib.colors as mcolors
 
 
-# Layout so setzen, dass Streamlit die volle Fensterbreite nutzt:
-st.set_page_config(layout="wide", page_title="Bundesliga Dashboard")
+st.set_page_config(layout="wide", page_title="Team Vergleich")
 def score_matrix(dist_home, dist_away):
     return np.outer(dist_home, dist_away)
 
@@ -35,23 +35,23 @@ def plot_score_heatmap(sm, team1, team2):
     return fig
 
 def main():
-    st.title("Bundesliga Dashboard (Prototyp)")
+    st.title("Football Dashboard")
+    st.image("src/dashboard/pages/logo.png", width=100, use_container_width=False)
     
-    # Sidebar: Einstellungen
     st.sidebar.header("Einstellungen")
-    league = st.sidebar.selectbox("Liga", ["bl1"])  # Nur Bundesliga
+    league = "bl1"
     season = st.sidebar.text_input("Saison", "2024")
-    use_table = st.sidebar.checkbox("Nur Tabelle anzeigen (OpenLigaDB)", value=True)
+    use_table = True
+    
     
         
     with st.spinner("Verarbeite Daten..."):
         team_data, team_players, df_matches, _ = run_data_processing_pipeline(use_table=False)
 
     if not team_data:
-        st.warning("Keine verarbeiteten Team-Daten vorhanden.")
+        st.warning("Keine verarbeiteten Team-Daten vorhanden. --> Hilfe findest du in der README")
         return
     st.success("Aufbereitete Daten erfolgreich geladen!")
-    
     # Alle Teams sortiert auflisten
     teams = sorted(team_data.keys())
 
@@ -72,22 +72,18 @@ def main():
         if m_between.empty:
             st.info("Keine direkten Duelle gefunden.")
         else:
-            st.dataframe(m_between)
+            st.subheader("Direkte Duelle")
+            excluded_columns = ["id", "fid", "league_id", "season", "h", "a", "home_team_std", "away_team_std"]
+            st.dataframe(m_between.drop(columns=excluded_columns, errors='ignore'))
         stats1 = team_data[team1]["stats"]
         stats2 = team_data[team2]["stats"]
         comp_df = pd.DataFrame([stats1, stats2], index=[team1, team2])
-             # Als DataFrame für eine übersichtliche Darstellung
+             
         stats_df1 = pd.DataFrame([stats1], index=[team1]).T
         stats_df2 = pd.DataFrame([stats2], index=[team2]).T
         matches = team_data[team1]["matches"]
         matches2 = team_data[team2]["matches"]
-       
 
-            # Club Logo
-      # Suche ein beliebiges Spiel, in dem das Team beteiligt ist
-         
-
-        # Statistiken Team1
         wins = stats_df1[team1]["wins"]
         lost = stats_df1[team1]["losses"]
         draw = stats_df1[team1]["draws"]
@@ -97,14 +93,10 @@ def main():
         points = stats_df1[team1]["points"]
            
 
-            # Club Logo
-        # Suche ein beliebiges Spiel, in dem das Team beteiligt ist
-        # Hier wird das erste Spiel des Teams verwendet, um das Logo zu finden
-        # Beispiel: Verwende das erste Spiel des Teams
         icon_url1 = matches.iloc[0]["teams.home.logo"] if matches.iloc[0]["teams.home.name"] == team1 else matches.iloc[0]["teams.away.logo"]
         icon_url2 = matches2.iloc[0]["teams.home.logo"] if matches2.iloc[0]["teams.home.name"] == team2 else matches2.iloc[0]["teams.away.logo"]
             
-            # Statistiken
+        # Statistiken für Team 2
         wins = stats_df2[team2]["wins"]
         lost = stats_df2[team2]["losses"]
         draw = stats_df2[team2]["draws"]
@@ -114,7 +106,7 @@ def main():
         points = stats_df2[team2]["points"]
            
             
-    col1, col2 = st.columns(2)  # Erstelle zwei Spalten
+    col1, col2 = st.columns(2)  
 
     
 
@@ -144,7 +136,7 @@ def main():
 
             
             
-            # Du kannst hier auswählen, welche Spalten du anzeigen möchtest:
+           
             columns_of_interest = [
                 "matches", "wins", "draws", "losses",
                 "goals_scored", "goals_conceded", "goal_difference", "points",
@@ -152,128 +144,127 @@ def main():
                 "avg_xG", "avg_xGA", "avg_npxG", "avg_npxGA",
                 "avg_ppda_att", "avg_ppda_def"
             ]
-            # Nur Spalten anzeigen, die tatsächlich existieren
             available_cols = [c for c in columns_of_interest if c in comp_df.columns]
             comp_df_display = comp_df[available_cols]
             
             
     st.title("Vergleich der Teams")
-
-            #st.dataframe(comp_df)
-
-    tab1, tab2, tab3 = st.tabs(["Siege", "Punkte", "Torhistorie"])
+    st.write("Hier kannst du die Teams vergleichen.")
+    tab1, tab2, tab3, tab4 = st.tabs(["Siege", "Punkte", "Possession-Analyse", "Spielerdaten"])
             
     with tab1:
         st.subheader("Siege")
                 
-            # Falls du alle (o. g. selektierten) numerischen Spalten plotten willst:
+           
         if not comp_df_display.empty:
                     st.bar_chart(comp_df["wins"])
         else:
                     st.info("Keine numerischen Kennzahlen zum Vergleich vorhanden.")
             
-        with tab2:
-                st.subheader("Punkte")
-                if not comp_df_display.empty:
-                    st.bar_chart(comp_df_display["points"])
-                else:
-                    st.info("Keine numerischen Kennzahlen zum Vergleich vorhanden.")
-            
-        with tab3:
-            # Letzte 5 Spiele von team1
-            team1_games = matches[
-            (matches["teams.home.name"] == team1) | (matches["teams.away.name"] == team1)
-            ].copy()
-
-# Datum parsen
-            team1_games["match_date"] = pd.to_datetime(team1_games["match_date"], errors="coerce")
-
-# Nur die letzten 5 Spiele nach Datum
-            team1_last5 = team1_games.sort_values("match_date").tail(5)
-
-# Tore berechnen je nachdem ob Heim oder Auswärts
-            team1_last5["goals_scored"] = np.where(
-                team1_last5["teams.home.name"] == team1,
-                team1_last5["goals.home"],
-                team1_last5["goals.away"]
-            )
-
-            team1_last5["goals_conceded"] = np.where(
-                team1_last5["teams.home.name"] == team1,
-                team1_last5["goals.away"],
-                team1_last5["goals.home"]
-        )
-
-            team1_last5["goal_difference"] = team1_last5["goals_scored"] - team1_last5["goals_conceded"]
-
-# Plot
-            st.line_chart(team1_last5.set_index("match_date")["goal_difference"])
-
-
-
-
-
-
-            
-                
-
-            
-            
-            # Optional: Vergleich der Roh-Spieldaten (nur im klassischen Modus sinnvoll)
-    if not use_table:
-            show_match_data = st.checkbox("Spieldaten anzeigen", value=False, key="matchdata_compare")
-            if show_match_data:
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.write(f"Spieldaten für {team1}")
-                    st.dataframe(team_data[team1]["matches"])
-                with col2:
-                    st.write(f"Spieldaten für {team2}")
-                    st.dataframe(team_data[team2]["matches"])
-            
-            # Spielerdatenvergleich
-    st.subheader("Spielerdaten Vergleich")
-    col1, col2 = st.columns(2)
-    with col1:
-                st.write(f"Spielerdaten für {team1}")
-                if team1 in team_players:
-                    st.dataframe(team_players[team1])
-                else:
-                    st.info(f"Keine Spielerdaten für {team1} gefunden.")
-    with col2:
-            st.write(f"Spielerdaten für {team2}")
-            if team2 in team_players:
-                st.dataframe(team_players[team2])
+    with tab2:
+            st.subheader("Punkte")
+            if not comp_df_display.empty:
+                st.bar_chart(comp_df_display["points"])
             else:
-                st.info(f"Keine Spielerdaten für {team2} gefunden.")
-
-           
-    res1 = team_data[team1]
-    res2 = team_data[team2]
-    col1, col2 = st.columns(2)
-    with col1:
+                st.info("Keine numerischen Kennzahlen zum Vergleich vorhanden.")
+            
+    with tab3:
+        st.subheader("Poisson-Prognose für zwei Teams")
+        data = calc_poisson_for_all_teams(league="bl1", season=2024, max_matchday=34, max_goals=5)
+        if not data:
+            st.error("Keine Daten für Poisson-Berechnung.")
+        res1 = data[team1]
+        res2 = data[team2]
+        col1, col2 = st.columns(2)
+        with col1:
             st.subheader(f"{team1} - Heim-Verteilung")
             x = np.arange(6)
-            df1 = pd.DataFrame({"Wahrscheinlichkeit": res1["poisson_home"]}, index=x)
-            st.bar_chart(df1)
-    with col2:
+            df1 = pd.DataFrame({"Tore": x, "Wahrscheinlichkeit": res1["poisson_home"]})
+            fig1 = px.bar(df1, x="Tore", y="Wahrscheinlichkeit",
+                      labels={"Tore": "Tore", "Wahrscheinlichkeit": "Wahrscheinlichkeit"},
+                      title="")
+            fig1.update_layout(xaxis_title="Tore", yaxis_title="Wahrscheinlichkeit")
+            st.plotly_chart(fig1, use_container_width=True)
+
+        with col2:
             st.subheader(f"{team2} - Auswärts-Verteilung")
             x = np.arange(6)
-            df2 = pd.DataFrame({"Wahrscheinlichkeit": res2["poisson_away"]}, index=x)
-            st.bar_chart(df2)
-            sm = score_matrix(res1["poisson_home"], res2["poisson_away"])
-            fig = plot_score_heatmap(sm, team1, team2)
-            st.pyplot(fig)
-            o15 = over_under(sm, 1.5)
-            o25 = over_under(sm, 2.5)
-            o35 = over_under(sm, 3.5)
-            st.write(f"Over 1.5: {o15:.2%} | Under 1.5: {(1 - o15):.2%}")
-            st.write(f"Over 2.5: {o25:.2%} | Under 2.5: {(1 - o25):.2%}")
-            st.write(f"Over 3.5: {o35:.2%} | Under 3.5: {(1 - o35):.2%}")
-            idx = int(np.argmax(sm))
-            home_goals = idx // sm.shape[1]
-            away_goals = idx % sm.shape[1]
-            st.write(f"Most probable score: {team1} {home_goals} : {away_goals} {team2} mit {sm[home_goals, away_goals]:.2%}")
+            df2 = pd.DataFrame({"Tore": x, "Wahrscheinlichkeit": res2["poisson_away"]})
+            fig2 = px.bar(df2, x="Tore", y="Wahrscheinlichkeit",
+                          labels={"Tore": "Tore", "Wahrscheinlichkeit": "Wahrscheinlichkeit"},
+                            title="")
+            fig2.update_layout(xaxis_title="Tore", yaxis_title="Wahrscheinlichkeit")
+            st.plotly_chart(fig2, use_container_width=True)
+
+        sm = score_matrix(res1["poisson_home"], res2["poisson_away"])
+        o15 = over_under(sm, 1.5)
+        o25 = over_under(sm, 2.5)
+        o35 = over_under(sm, 3.5)
+        idx = int(np.argmax(sm))
+        home_goals = idx // sm.shape[1]
+        away_goals = idx % sm.shape[1]
+        st.write(f"Wahrscheinlichstes Ergebnis: {team1} {home_goals} : {away_goals} {team2} mit {sm[home_goals, away_goals]:.2%}")
+
+
+
+
+
+            
                 
+
+            
+            
+          
+    with tab4:
+        st.subheader("Spielerdaten Vergleich")
+
+        col1, col2 = st.columns(2)
+
+        def style_dataframe_top_bottom(df):
+            numeric_cols = df.select_dtypes(include="number").columns.tolist()
+            if 'year' in numeric_cols:
+                numeric_cols.remove('year')
+            styled = df.style.format(precision=2)\
+                .set_properties(**{"text-align": "center", "font-size": "14px"})\
+                .set_table_styles([
+                    {"selector": "thead th", "props": [
+                        ("background-color", "#f9f9f9"),
+                        ("font-weight", "bold")
+                    ]}
+                ])
+            for col in numeric_cols:
+                top_5 = df[col].nlargest(5)
+                bottom_5 = df[col].nsmallest(5)
+                styled = styled.apply(lambda row, top_5=top_5: ['background-color: green' if val in top_5.values else '' for val in row], subset=[col], axis=1)
+                styled = styled.apply(lambda row, bottom_5=bottom_5: ['background-color: yellow' if val in bottom_5.values else '' for val in row], subset=[col], axis=1)
+            return styled
+
+        def show_team_players(col, team_name):
+            with col:
+                st.markdown(f"### Spielerdaten für **{team_name}**")
+                if team_name in team_players:
+                    excluded_columns = ["id", "team_title", "team_name_std", "league", "time"]
+                    df = team_players[team_name].drop(columns=excluded_columns, errors='ignore')
+                    styled_df = style_dataframe_top_bottom(df)
+                    st.dataframe(styled_df, use_container_width=True)
+                else:
+                    st.info(f"Keine Spielerdaten für **{team_name}** gefunden.")
+
+        show_team_players(col1, team1)
+        show_team_players(col2, team2)
+
+        with st.expander("ℹ️ Farblegende"):
+            st.markdown("""
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <div style="width: 100px; height: 20px; background: #fee08b;"></div> 🟡 Besonders schwach<br>
+                <div style="width: 100px; height: 20px; background: #1a9850;"></div> 🟢 Starker Wert
+            </div>
+            """, unsafe_allow_html=True)
+
+
+    
+    
+   
+            
 if __name__ == "__main__":
     main()

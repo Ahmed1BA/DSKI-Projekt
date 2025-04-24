@@ -69,7 +69,7 @@ if __name__ == "__main__":
     setup_logging("logs/merge_data.log")
 
     logging.info("Ausführen von merge_api_csv")
-    KEY = "79736f9738d6d3a7edc82d9430ba53a6"
+    KEY = "5ee9cc588b37627a3a5121834e07ed1c"
     script_dir = os.path.dirname(__file__)
     csv_file = os.path.join(script_dir, "../../docs/filtercsv/filtered_TeamsData.csv")
 
