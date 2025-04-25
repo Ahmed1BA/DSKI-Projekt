@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
-import sys
-from pathlib import Path
+
 
 from src.data.data_processing import run_data_processing_pipeline
 from src.analysis.poisson import calc_poisson_for_all_teams
@@ -11,7 +10,7 @@ st.set_page_config(layout="wide", page_title="Einzelanalyse")
 
 def main():
 
-    st.image("src/dashboard/pages/logo.png", width=100, use_container_width=False)
+    st.image("src/dashboard/pages/logo.png", width=100, use_container_width=False) 
     st.title("Football Dashboard")
 
     st.subheader("Einzelanalyse für ein Team")
