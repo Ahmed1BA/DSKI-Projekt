@@ -39,8 +39,8 @@ def main():
         "won": "Siege",
         "draw": "Unentschieden",
         "lost": "Niederlagen",
-        "goals": "Tore (geschossen)",
-        "opponentGoals": "Tore (kassiert)",
+        "goals": "Tore ",
+        "opponentGoals": "Gegentore",
         "goalDiff": "Tordifferenz",
         "matches": "Spiele",
     })
@@ -64,7 +64,7 @@ def main():
         return [''] * len(row)
 
     df_table = df_table.drop(columns=["teamInfoId", "shortName", "teamIconUrl"], errors="ignore")
-    styled_table = df_table.style.apply(champion_leauge, axis=1).apply(euro_league, axis=1)
+    styled_table = df_table.style.apply(champion_leauge, axis=1).apply(euro_league, axis=1).apply(conference_league, axis=1).apply(relegation_zone, axis=1)
     st.dataframe(styled_table, use_container_width=True)
 
     with st.expander("ℹ️ Farblegende"):
