@@ -2,16 +2,20 @@ BAYERN = "Bayern München"
 HOFFENHEIM = "1899 Hoffenheim"
 MAINZ = "FSV Mainz 05"
 UNION = "Union Berlin"
+GLADBACH = "Borussia Mönchengladbach"
+HERTHA = "Hertha BSC"
 
 TEAM_MAPPING = {
     "bayern munich": BAYERN,
     "bayern münchen": BAYERN,
     "fc bayern": BAYERN,
     "fc bayern münchen": BAYERN,
-    "hertha bsc": "Hertha BSC",
+    "hertha bsc": HERTHA,
+    "hertha berlin": HERTHA,
     "sc freiburg": "SC Freiburg",
     "vfl wolfsburg": "VfL Wolfsburg",
-    "borussia mönchengladbach": "Borussia Mönchengladbach",
+    "borussia mönchengladbach": GLADBACH,
+    "borussia monchengladbach": GLADBACH,
     "fsv mainz 05": MAINZ,
     "1. fsv mainz 05": MAINZ,
     "borussia dortmund": "Borussia Dortmund",
@@ -32,7 +36,8 @@ TEAM_MAPPING = {
     "holstein kiel": "Holstein Kiel",
     "werder bremen": "Werder Bremen",
     "fc st. pauli": "FC St. Pauli",
-    "1.fc köln": "1.FC Köln"
+    "1.fc köln": "1.FC Köln",
+    "fc schalke 04": "FC Schalke 04",
 }
 
 
