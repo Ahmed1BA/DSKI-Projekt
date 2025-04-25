@@ -149,7 +149,7 @@ def main():
             
     st.title("Vergleich der Teams")
     st.write("Hier kannst du die Teams vergleichen.")
-    tab1, tab2, tab3, tab4 = st.tabs(["Siege", "Punkte", "Possession-Analyse", "Spielerdaten"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Siege", "Punkte", "Poisson-Analyse", "Spielerdaten"])
             
     with tab1:
         st.subheader("Siege")
