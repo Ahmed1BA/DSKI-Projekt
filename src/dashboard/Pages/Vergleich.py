@@ -51,7 +51,7 @@ def main():
         st.warning("Keine verarbeiteten Team-Daten vorhanden. --> Hilfe findest du in der README")
         return
     st.success("Aufbereitete Daten erfolgreich geladen!")
-    # Alle Teams sortiert auflisten
+ 
     teams = sorted(team_data.keys())
 
     st.subheader("Teamvergleich")
@@ -95,7 +95,6 @@ def main():
         icon_url1 = matches.iloc[0]["teams.home.logo"] if matches.iloc[0]["teams.home.name"] == team1 else matches.iloc[0]["teams.away.logo"]
         icon_url2 = matches2.iloc[0]["teams.home.logo"] if matches2.iloc[0]["teams.home.name"] == team2 else matches2.iloc[0]["teams.away.logo"]
             
-        # Statistiken für Team 2
         wins = stats_df2[team2]["wins"]
         lost = stats_df2[team2]["losses"]
         draw = stats_df2[team2]["draws"]
@@ -109,7 +108,7 @@ def main():
 
     
 
-    with col1:  # Linke Spalte für Team 1
+    with col1:
             st.write(f"## {team1}")
             st.image(icon_url1, caption=f"Logo: {team1}", width=200)
             st.divider()
@@ -121,7 +120,7 @@ def main():
             st.write(f"**Anzahl Siege:** {stats_df1[team1]['wins']}")
            
 
-    with col2:  # Rechte Spalte für Team 2
+    with col2:
             st.write(f"## {team2}")
             st.image(icon_url2, caption=f"Logo: {team2}", width=200)
             st.divider()
@@ -139,7 +138,7 @@ def main():
             columns_of_interest = [
                 "matches", "wins", "draws", "losses",
                 "goals_scored", "goals_conceded", "goal_difference", "points",
-                # xG-Metriken:
+
                 "avg_xG", "avg_xGA", "avg_npxG", "avg_npxGA",
                 "avg_ppda_att", "avg_ppda_def"
             ]

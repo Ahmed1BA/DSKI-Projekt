@@ -25,14 +25,12 @@ def main():
     st.success("Tabelle erfolgreich geladen!")
     st.write("### Tabelle")
 
-    # Apply light blue background to the first 4 rows
     def champion_leauge(row):
-        if row.name < 4:  # Check if the row index is less than 4
+        if row.name < 4: 
             return ['background-color: lightblue'] * len(row)
         return [''] * len(row)
     
     
-    # Apply light blue background to the first 4 rows
     df_table = df_table.rename(columns={
         "teamName": "Mannschaft",
         "points": "Punkte",
@@ -46,7 +44,7 @@ def main():
     })
 
     def euro_league(row):
-        if row.name == 4:  # 5th place (index 4)
+        if row.name == 4: 
             return ['background-color: #FFD69D'] * len(row)
         return [''] * len(row)
     
@@ -57,9 +55,9 @@ def main():
 
 
     def relegation_zone(row):
-        if row.name == 15:  # 16th place (index 16)
+        if row.name == 15:  
             return ['background-color: lightcoral'] * len(row)
-        elif row.name >= 16:  # 17th and 18th place (index 17 and 18)
+        elif row.name >= 16:  
             return ['background-color: red'] * len(row)
         return [''] * len(row)
 
