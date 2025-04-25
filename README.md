@@ -6,8 +6,6 @@ This service collects, processes, and analyzes football (soccer) match data from
 
 ## How It Works
 
-The service follows these steps:
-
 - **Data Retrieval:**  
   Fetches live league data via API and loads historical data from CSV files.
 
@@ -43,7 +41,7 @@ The service follows these steps:
 
 - Python 3.8+
 - Required Python packages (see `requirements.txt`)
-- API access credentials (e.g., for OpenLigaDB) if live data is used
+- API access credentials (e.g., for OpenLigaDB or API-Sports) if live data is used
 
 ### Step 1: Clone the Repository
 
@@ -60,26 +58,36 @@ pip install -r requirements.txt
 
 ### Step 3: Configure the Project
 
-- **API Access:**  
-  Update your API keys and endpoint settings in the configuration file (if applicable).
-
 - **CSV Data Paths:**  
   Adjust the file paths in the configuration or directly in the scripts to point to your CSV data files.
 
 - **Logging & Environment:**  
   Ensure the logging configuration and project root structure (with proper `__init__.py` files) are set up to support relative imports.
 
-### Step 4: Run the Service
+### Step 4: API-Key-Hinweis
+
+Manchmal schlägt die API-Abfrage fehl, wenn derselbe API-Key von verschiedenen IP-Adressen aus genutzt wird. Um solche Fehler zu vermeiden, erstelle dir bitte einen eigenen API-Key unter:
+
+- https://api-sports.io
+
+Trage den erhaltenen Key in die Datei `src/api_key.py` ein:
+
+```python
+# src/api_key.py
+API_KEY = "DEIN_API_KEY"
+```
+
+Alternativ kannst du den Key auch als Umgebungsvariable `API_KEY` setzen und in deinen Modulen darauf zugreifen.
+
+### Step 5: Run the Service
 
 - **Data Processing Pipeline:**  
-  Run the main data processing module:
   ```bash
   python -m src.data.data_processing
   ```
-  This will fetch, merge, and analyze the data.
+  Dies ruft Daten ab, merged sie und erstellt die Analyse.
 
 - **Dashboard:**  
-  Launch the dashboard to visualize the analysis results:
   ```bash
   python -m src.dashboard.dashboard
   ```
@@ -87,27 +95,27 @@ pip install -r requirements.txt
 ## Customizing the Service
 
 - **Data Sources:**  
-  Modify CSV file paths and API endpoints as needed to reflect your data environment.
+  Modifiziere CSV-Dateipfade und API-Endpunkte nach Bedarf.
 
 - **Statistical Models:**  
-  Adjust parameters in the Poisson model (and other analyses) to better suit your analytical needs.
+  Passe Parameter des Poisson-Modells (und andere Analysen) an.
 
 - **Dashboard:**  
-  Customize the dashboard's layout, charts, and visual settings in the `dashboard.py` module.
+  Gestalte Layout, Charts und visuelle Einstellungen in `dashboard.py` um.
 
 ## Troubleshooting
 
 - **Import Issues:**  
-  Ensure every directory in the package (e.g., `src/`, `src/api/`, `src/data/`, etc.) includes an `__init__.py` file.  
-  Run the project from the root directory (e.g., using `python -m src.data.data_processing`) to enable relative imports.
+  Überprüfe, dass alle Verzeichnisse (`src/`, `src/api/`, `src/data/`, etc.) ein `__init__.py` besitzen und führe das Projekt aus dem Root-Verzeichnis aus.
 
 - **API Errors:**  
-  Double-check your API credentials and endpoint configurations.
+  Bei Fehlern überprüfe deinen API-Key, den Header (`x-apisports-key`) und die Dokumentation unter [API Sports](https://api-sports.io).
 
 - **Data Merging Problems:**  
-  Verify that CSV file formats and paths are correct and consistent with the expected structure.
+  Kontrolliere, ob die CSV-Formate und -Pfade korrekt sind.
 
 - **Logging:**  
-  Review the log files (e.g., `logs/data_processing.log`) for detailed error messages to help diagnose issues.
+  Schau in die Logdateien (z.B. `logs/data_processing.log`), um detaillierte Fehlermeldungen zu sehen.
 
 Enjoy exploring your football data and gaining actionable insights!
+
