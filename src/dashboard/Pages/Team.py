@@ -18,7 +18,7 @@ def main():
     st.sidebar.header("Einstellungen")
     league = "bl1"
     season = st.sidebar.text_input("Saison", "2024")
-    use_table = TRUE
+    use_table = True
     
     with st.spinner("Verarbeite Daten..."):
         team_data, team_players, df_matches, df_match_data = run_data_processing_pipeline(use_table=use_table, league=league, season=season)

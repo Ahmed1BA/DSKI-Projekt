@@ -40,7 +40,7 @@ Dieses Dashboard hilft dir dabei, Spiele, Spieler und Taktiken besser zu versteh
 
 st.markdown("---")
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4= st.columns(3)
 
 with col1:
     st.subheader("📊 Datenanzeigen")
@@ -53,6 +53,10 @@ with col2:
 with col3:
     st.subheader("📅  Vergleich")
     st.write("Vergleiche Teams und Spieler über verschiedene Spielzeiten hinweg.")
+
+with col4:
+    st.subheader("Tabelle")
+    st.write("Sieh dir die aktuelle Tabelle an und verfolge den Fortschritt der Teams.")
 
 st.markdown("---")
 
