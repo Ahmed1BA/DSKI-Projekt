@@ -83,13 +83,13 @@ Alternativ kannst du den Key auch als Umgebungsvariable `API_KEY` setzen und in 
 
 - **Data Processing Pipeline:**  
   ```bash
-  python -m src.data.data_processing
+  python3 -m src/data/data_processing
   ```
   Dies ruft Daten ab, merged sie und erstellt die Analyse.
 
 - **Dashboard:**  
   ```bash
-  python -m src.dashboard.home.py
+  python3 -m streamlit run src/dashboard/home.py
   ```
 
 ## Customizing the Service
