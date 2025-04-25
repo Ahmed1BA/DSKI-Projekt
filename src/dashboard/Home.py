@@ -75,3 +75,5 @@ with col6:
     if st.button("Vergleich"):
         st.switch_page("pages/Vergleich.py")
 
+with st.expander("Legenden"):
+            st.image("src/dashboard/pages/schoepfer.jpg", caption="Legende", width=200)

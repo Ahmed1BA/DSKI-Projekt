@@ -67,14 +67,3 @@ def calc_poisson_for_all_teams(league="bl1", season=2024, max_matchday=34, max_g
         }
     return results
 
-def calculate_poisson_probabilities(avg_goals, max_goals=5):
-    x = np.arange(max_goals + 1)
-    return poisson.pmf(x, avg_goals)
-
-
-def get_poisson_matrix_for_gemini(team1_avg_goals, team2_avg_goals, max_goals=5):
-    team1_poisson = calculate_poisson_probabilities(team1_avg_goals, max_goals)
-    team2_poisson = calculate_poisson_probabilities(team2_avg_goals, max_goals)
-
-    matrix = np.outer(team1_poisson, team2_poisson)
-    return matrix

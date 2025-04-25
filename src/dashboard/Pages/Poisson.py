@@ -31,9 +31,9 @@ def plot_score_heatmap(sm, team1, team2):
 
 def main():
     st.set_page_config(layout="wide", page_title="Poisson-Analyse")
-    st.title("Football Dashboard")
     st.image("src/dashboard/pages/logo.png", width=100, use_container_width=False)
-    st.title("Poisson-Analyse für zwei Teams")
+    st.title("Football Dashboard")
+    st.subheader("Poisson-Analyse für zwei Teams")
     with st.spinner("Daten werden geladen..."):
         team_data, team_players, df_matches, df_match_data = run_data_processing_pipeline(use_table=False)
     

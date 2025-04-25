@@ -11,8 +11,8 @@ st.set_page_config(layout="wide", page_title="Einzelanalyse")
 
 def main():
 
-    st.title("Football Dashboard")
     st.image("src/dashboard/pages/logo.png", width=100, use_container_width=False)
+    st.title("Football Dashboard")
 
     st.subheader("Einzelanalyse für ein Team")
     

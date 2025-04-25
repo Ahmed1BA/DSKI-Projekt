@@ -35,8 +35,8 @@ def plot_score_heatmap(sm, team1, team2):
     return fig
 
 def main():
-    st.title("Football Dashboard")
     st.image("src/dashboard/pages/logo.png", width=100, use_container_width=False)
+    st.title("Football Dashboard")
     
     st.sidebar.header("Einstellungen")
     league = "bl1"
