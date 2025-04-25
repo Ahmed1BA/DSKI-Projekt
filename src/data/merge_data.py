@@ -5,6 +5,7 @@ import pandas as pd
 from ..api.api_client import ApiSportsClient
 from ..mapping.team_mapping import standardize_team
 from ..analysis.csv_analysis import load_csv_data
+from ..api.api_key import API_KEY
 
 
 def load_fixtures_to_df(api_key, league_id, season, data_dir="data") -> pd.DataFrame:
@@ -69,7 +70,7 @@ if __name__ == "__main__":
     setup_logging("logs/merge_data.log")
 
     logging.info("Ausführen von merge_api_csv")
-    KEY = "5ee9cc588b37627a3a5121834e07ed1c"
+    KEY = API_KEY
     script_dir = os.path.dirname(__file__)
     csv_file = os.path.join(script_dir, "../../docs/filtercsv/filtered_TeamsData.csv")
 
