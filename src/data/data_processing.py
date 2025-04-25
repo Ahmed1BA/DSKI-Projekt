@@ -5,6 +5,7 @@ import logging
 from ..data.merge_data import merge_api_csv
 from ..api.openligadb_table import get_current_bundesliga_table
 from ..mapping.team_mapping import standardize_team
+from ..api.api_key import API_KEY
 
 GOALS_HOME = "goals.home"
 GOALS_AWAY = "goals.away"
@@ -149,7 +150,7 @@ def run_data_processing_pipeline(
     use_table: bool = False,
     league: str = "bl1",
     season: str = "2024",
-    api_key: str = "77b732eab87dd53e0953cc52ad537946"
+    api_key: str = API_KEY
 ):
     script_dir = os.path.dirname(__file__)
     data_dir = os.path.abspath(os.path.join(script_dir, "../../docs/filtercsv"))

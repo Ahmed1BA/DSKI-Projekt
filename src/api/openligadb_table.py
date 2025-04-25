@@ -3,6 +3,7 @@ import requests
 import pandas as pd
 
 
+
 def get_current_bundesliga_table(league="bl1", season="2024") -> pd.DataFrame:
     url = f"https://www.openligadb.de/api/getbltable/{league}/{season}"
 
@@ -32,3 +33,5 @@ if __name__ == "__main__":
         logging.info("Tabelle geladen:\n%s", df.head())
     except Exception as e:
         logging.error("Fehler beim Laden der Bundesliga-Tabelle: %s", e)
+
+

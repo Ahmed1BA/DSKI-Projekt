@@ -5,16 +5,24 @@ from ..mapping.team_mapping import standardize_team
 
 API_URL = "https://api.openligadb.de/getmatchdata/bl1"
 
+import time
+
 def fetch_all_finished_matches(league="bl1", season=2024, max_matchday=34):
     all_matches = []
     for matchday in range(1, max_matchday + 1):
         url = f"{API_URL}/{season}/{matchday}"
-        r = requests.get(url, timeout=5)
-        r.raise_for_status()
-        matches = r.json()
-        finished = [m for m in matches if m.get("matchIsFinished")]
-        all_matches.extend(finished)
+        try:
+            r = requests.get(url, timeout=5)
+            r.raise_for_status()
+            matches = r.json()
+            finished = [m for m in matches if m.get("matchIsFinished")]
+            all_matches.extend(finished)
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️ Fehler beim Abrufen von Spieltag {matchday}: {e}")
+            time.sleep(1)  # kurze Pause und weitermachen
+            continue
     return all_matches
+
 
 def extract_goals(matches):
     teams = {}
@@ -58,3 +66,4 @@ def calc_poisson_for_all_teams(league="bl1", season=2024, max_matchday=34, max_g
             "poisson_away": poisson_away
         }
     return results
+
