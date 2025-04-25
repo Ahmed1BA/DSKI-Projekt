@@ -67,7 +67,7 @@ Oder klicke direkt auf einen Bereich:
 """)
 
 
-col4, col5, col6 = st.columns(3)
+col4, col5, col6, col7 = st.columns(4)
 with col4:
     if st.button("📊 Team Daten"):
         st.switch_page("pages/Team.py")
@@ -77,6 +77,11 @@ with col5:
 with col6:
     if st.button("Vergleich"):
         st.switch_page("pages/Vergleich.py")
+with col7:
+    if st.button("Tabelle"):
+        st.switch_page("pages/Tabelle.py")
+       
+
 
 with st.expander("Legenden"):
             st.image("src/dashboard/pages/schoepfer.jpg", caption="Legende", width=200)
