@@ -89,7 +89,7 @@ Alternativ kannst du den Key auch als Umgebungsvariable `API_KEY` setzen und in 
 
 - **Dashboard:**  
   ```bash
-  python -m src.dashboard.dashboard
+  python -m src.dashboard.home.py
   ```
 
 ## Customizing the Service
